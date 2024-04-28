@@ -4,7 +4,7 @@ import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.keras.optimizers import Adam
 from buffer import ReplayBuffer
-from sac_networks import ActorNetwork, CriticNetwork, ValueNetwork
+from network import ActorNetwork, CriticNetwork, ValueNetwork
 
 class SAC:
     def __init__(self, alpha=0.0003, beta=0.0003, input_dims=[8],

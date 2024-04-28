@@ -71,3 +71,5 @@ class ActorNetwork(keras.Model):
         log_probs -= tf.math.log(1-tf.math.pow(actions,2)+self._noise)
         log_probs = tf.math.reduce_sum(log_probs, axis=1, keepdims=True)
 
+
+
