@@ -66,10 +66,9 @@ class ActorNetwork(keras.Model):
         alpha = self.call(state)
         prob = tfp.distributions.Dirichlet(alpha)
 
-        actions = prob.sample()
-        log_probs = prob.log_prob(actions)
-        log_probs -= tf.math.log(1-tf.math.pow(actions,2)+self._noise)
+        action = prob.sample()
+        log_probs = prob.log_prob(action)
         log_probs = tf.math.reduce_sum(log_probs, axis=1, keepdims=True)
 
-
+        return action, log_probs
 
