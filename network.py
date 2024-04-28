@@ -1,8 +1,9 @@
 import os
 import numpy as np
+import keras
+
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras.layers import Dense
+from keras.layers import Dense
 import tensorflow_probability as tfp
 
 class CriticNetwork(keras.Model):

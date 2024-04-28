@@ -4,7 +4,7 @@ from SAC import SAC
 from gym import wrappers
 
 if __name__ == '__main__':
-    env = gym.make('InvertedPendulumBulletEnv-v0')
+    env = gym.make('InvertedPendulum-v4')
     agent = SAC(input_dims=env.observation_space.shape, env=env,
             n_actions=env.action_space.shape[0])
     n_games = 250

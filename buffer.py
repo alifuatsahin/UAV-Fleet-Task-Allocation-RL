@@ -4,11 +4,11 @@ class ReplayBuffer:
     def __init__(self, max_size, input_shape, n_actions):
         self._m_size = max_size
         self._m_count = 0
-        self._state_m = np.zeros((self._m_size, input_shape))
-        self._new_state_m = np.zeros((self._m_size, input_shape))
+        self._state_m = np.zeros((self._m_size, *input_shape))
+        self._new_state_m = np.zeros((self._m_size, *input_shape))
         self._action_m = np.zeros((self._m_size, n_actions))
         self._reward_m = np.zeros((self._m_size))
-        self._terminal_m = np.zeros(self._m_size, dtype=np.bool)
+        self._terminal_m = np.zeros(self._m_size, dtype=np.bool_)
 
     def store(self, state, action, reward, state_, done):
         id = self._m_count % self._m_size

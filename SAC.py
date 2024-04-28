@@ -1,10 +1,12 @@
 import os
 import numpy as np
+import keras
+
 import tensorflow as tf
-import tensorflow.keras as keras
-from tensorflow.keras.optimizers import Adam
+from keras.optimizers import Adam
 from buffer import ReplayBuffer
 from network import ActorNetwork, CriticNetwork, ValueNetwork
+
 
 class SAC:
     def __init__(self, alpha=0.0003, beta=0.0003, input_dims=[8],
@@ -16,8 +18,7 @@ class SAC:
         self.batch_size = batch_size
         self.n_actions = n_actions
 
-        self.actor = ActorNetwork(n_actions=n_actions, name='actor', 
-                                    max_action=env.action_space.high)
+        self.actor = ActorNetwork(n_actions=n_actions, name='actor')
         self.critic_1 = CriticNetwork(n_actions=n_actions, name='critic_1')
         self.critic_2 = CriticNetwork(n_actions=n_actions, name='critic_2')
         self.value = ValueNetwork(name='value')
