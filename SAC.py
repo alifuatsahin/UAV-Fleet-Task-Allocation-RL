@@ -34,7 +34,7 @@ class SAC:
 
     def choose_action(self, observation):
         state = tf.convert_to_tensor([observation])
-        actions, _ = self.actor.sample_normal(state, reparameterize=False)
+        actions, _ = self.actor.sample_dirichlet(state)
 
         return actions[0]
 

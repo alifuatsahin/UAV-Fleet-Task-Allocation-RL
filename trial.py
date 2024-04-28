@@ -13,7 +13,7 @@ if __name__ == '__main__':
     score_history = []
 
     for i in range(n_games):
-        observation = env.reset()
+        observation = env.reset()[0]
         done = False
         score = 0
         while not done:
