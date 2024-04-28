@@ -6,7 +6,7 @@ class UAVGymEnv(gym.Env):
     def __init__(self, uav_number):
         super(UAVGymEnv, self).__init__()
         self._uav_number = uav_number
-        self._health_state_dim = 10 * self._uav_number
+        self._health_state_dim = 11 * self._uav_number
         self._max_distance = 100
         self._setupActionSpace()
         self._setupObservationSpace()
