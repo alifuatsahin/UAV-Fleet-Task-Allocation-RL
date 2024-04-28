@@ -1,9 +1,8 @@
 import os
 import numpy as np
-import keras
-
 import tensorflow as tf
-from keras.layers import Dense
+from tensorflow import keras
+from tensorflow.keras.layers import Dense
 import tensorflow_probability as tfp
 
 class CriticNetwork(keras.Model):
@@ -21,7 +20,7 @@ class CriticNetwork(keras.Model):
         ])
 
     def call(self, state, action):
-        q = self._network(tf.concat(action,state), axis=1)
+        q = self._network(tf.concat(action, state), axis=1)
 
         return q
     
