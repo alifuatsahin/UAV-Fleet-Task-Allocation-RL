@@ -56,7 +56,7 @@ class SAC:
         if self.memory.m_count < self.batch_size:
             return
 
-        state, action, reward, new_state, done = \
+        state, new_state, action, reward, done = \
                 self.memory.sample(self.batch_size)
 
         states = tf.convert_to_tensor(state, dtype=tf.float32)
@@ -68,9 +68,8 @@ class SAC:
             value = tf.squeeze(self.value(states), 1)
             value_ = tf.squeeze(self.target_value(states_), 1)
 
-            current_policy_actions, log_probs = self.actor.sample_normal(states,
-                                                        reparameterize=False)
-            log_probs = tf.squeeze(log_probs,1)
+            current_policy_actions, log_probs = self.actor.sample_dirichlet(states)
+            # log_probs = tf.squeeze(log_probs,1)
             q1_new_policy = self.critic_1(states, current_policy_actions)
             q2_new_policy = self.critic_2(states, current_policy_actions)
             critic_value = tf.squeeze(
@@ -86,9 +85,8 @@ class SAC:
 
 
         with tf.GradientTape() as tape:
-            new_policy_actions, log_probs = self.actor.sample_normal(states,
-                                                reparameterize=True)
-            log_probs = tf.squeeze(log_probs, 1)
+            new_policy_actions, log_probs = self.actor.sample_dirichlet(states)
+            # log_probs = tf.squeeze(log_probs, 1)
             q1_new_policy = self.critic_1(states, new_policy_actions)
             q2_new_policy = self.critic_2(states, new_policy_actions)
             critic_value = tf.squeeze(tf.math.minimum(
@@ -97,8 +95,8 @@ class SAC:
             actor_loss = log_probs - critic_value
             actor_loss = tf.math.reduce_mean(actor_loss)
 
-        actor_network_gradient = tape.gradient(actor_loss, 
-                                            self.actor.trainable_variables)
+        actor_network_gradient = tape.gradient(actor_loss, self.actor.trainable_variables)
+        
         self.actor.optimizer.apply_gradients(zip(
                         actor_network_gradient, self.actor.trainable_variables))
         

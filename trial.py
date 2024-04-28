@@ -16,13 +16,16 @@ if __name__ == '__main__':
         observation = env.reset()[0]
         done = False
         score = 0
-        while not done:
+        max_iter = 0
+        while not done and max_iter < 500:
             action = agent.choose_action(observation)
             observation_, reward, done, _ , info = env.step(action)
             score += reward
             agent.remember(observation, action, reward, observation_, done)
             agent.learn()
             observation = observation_
+            max_iter += 1
+            print(max_iter)
         score_history.append(score)
         avg_score = np.mean(score_history[-100:])
 

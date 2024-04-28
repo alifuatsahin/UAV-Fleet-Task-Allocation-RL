@@ -14,14 +14,14 @@ class CriticNetwork(keras.Model):
         self._checkpoint_file = os.path.join(self._checkpoint_dir, name +'\sac')
 
         self._network = keras.Sequential([
-            keras.Input(shape=(256,21,)),
+            keras.Input(shape=(23,)),
             Dense(nn1_dim, activation='relu'),
             Dense(nn2_dim, activation='relu'),
             Dense(1, activation=None)
         ])
 
     def call(self, state, action):
-        q = self._network(tf.concat(action, state), axis=1)
+        q = self._network(tf.concat([action, state], axis=1))
 
         return q
     
@@ -56,7 +56,7 @@ class ActorNetwork(keras.Model):
             keras.Input(shape=(17,)),
             Dense(nn1_dim, activation='relu'),
             Dense(nn2_dim, activation='relu'),
-            Dense(self._n_actions, activation=None)
+            Dense(self._n_actions, activation='softplus')
         ])
 
     def call(self, state):
@@ -65,11 +65,11 @@ class ActorNetwork(keras.Model):
         return alpha
     
     def sample_dirichlet(self, state):
-        alpha = np.abs(self.call(state))
+        alpha = self.call(state)
         prob = tfp.distributions.Dirichlet(alpha)
 
         action = prob.sample()
-        log_probs = prob.log_prob(action)
+        log_probs = prob.log_prob(action + self._noise) 
         log_probs = tf.math.reduce_sum(log_probs, keepdims=True)
 
         return action, log_probs
