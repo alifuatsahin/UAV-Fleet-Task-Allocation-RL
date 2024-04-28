@@ -4,7 +4,7 @@ from SAC import SAC
 from gym import wrappers
 
 if __name__ == '__main__':
-    env = gym.make('InvertedPendulum-v4')
+    env = gym.make('HalfCheetah-v4')
     agent = SAC(input_dims=env.observation_space.shape, env=env,
             n_actions=env.action_space.shape[0])
     n_games = 250
@@ -18,7 +18,7 @@ if __name__ == '__main__':
         score = 0
         while not done:
             action = agent.choose_action(observation)
-            observation_, reward, done, info = env.step(action)
+            observation_, reward, done, _ , info = env.step(action)
             score += reward
             agent.remember(observation, action, reward, observation_, done)
             agent.learn()

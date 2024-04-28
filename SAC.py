@@ -53,7 +53,7 @@ class SAC:
         self.target_value.set_weights(weights)
 
     def learn(self):
-        if self.memory.m_cntr < self.batch_size:
+        if self.memory.m_count < self.batch_size:
             return
 
         state, action, reward, new_state, done = \
