@@ -89,7 +89,8 @@ class ActorNetwork(nn.Module):
             nn.ReLU(),
             nn.Linear(self.fc1_dims, self.fc2_dims),
             nn.ReLU(),
-            nn.Linear(self.fc2_dims, self.n_actions)
+            nn.Linear(self.fc2_dims, self.n_actions),
+            nn.Softplus()
         )
 
         self.optimizer = optim.Adam(self.parameters(), lr=alpha)
