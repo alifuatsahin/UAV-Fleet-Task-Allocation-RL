@@ -112,7 +112,7 @@ class ActorNetwork(nn.Module):
         self.load_state_dict(T.load(self.checkpoint_file))
 
     def sample_dirichlet(self, state):
-        alpha = self.model(state)
+        alpha = self.forward(state)
         alpha = T.clamp(alpha, self.noise, 1-self.noise)
         dist = dirichlet.Dirichlet(alpha)
         actions = dist.sample()
