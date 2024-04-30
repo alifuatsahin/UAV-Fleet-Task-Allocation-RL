@@ -192,10 +192,10 @@ class UAV:
         return self.failure_detection
 
     def getStats(self) -> np.ndarray:
-        return np.concatenate(
+        return np.concatenate((
             self.hover_bearing_health,
             self.hover_coil_health,
             np.array([self.pusher_bearing_health]),
             np.array([self.pusher_coil_health]),
             np.array([self.battery_level])
-        )
+        ))

@@ -8,9 +8,10 @@ class UAVGymEnv(gym.Env):
     def __init__(self, uav_number ,max_distance=100):
         super(UAVGymEnv, self).__init__()
         self._uav_number = uav_number
+        self._max_distance = max_distance
         self.Fleet = Fleet(uav_number)
-        self.MissionGenerator = MissionGenerator(max_distance)
-        self._health_state_dim = Fleet.getStats().shape[0]
+        self.MissionGenerator = MissionGenerator(self._max_distance)
+        self._health_state_dim = self.Fleet.getStats().shape[0]
         self._setupActionSpace()
         self._setupObservationSpace()
 
@@ -28,18 +29,19 @@ class UAVGymEnv(gym.Env):
         self.observation_space = spaces.Box(self._obs_low, self._obs_high, dtype=np.float32)
 
     def _getObservation(self):
-        distance = MissionGenerator.current()
-        state = np.concatenate(self.Fleet.getStats(), np.array([distance]))
+        distance = self.MissionGenerator.current()
+        state = np.append(self.Fleet.getStats(), distance)
         return state
 
     def _reward(self, done):
         return 1 if done else 0
 
     def reset(self):
-        Fleet.reset()
+        self.Fleet.reset()
+        return self._getObservation()
 
     def step(self, action):
-        distance = MissionGenerator.generate()
+        distance = self.MissionGenerator.generate()
         done = self.Fleet.executeMission(distance, action)
         reward = self._reward()
         return np.array(self._getObservation()), reward, done, {}
