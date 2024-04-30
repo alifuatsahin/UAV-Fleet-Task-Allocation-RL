@@ -108,8 +108,8 @@ class Agent():
         self.critic1.optimizer.zero_grad()
         self.critic2.optimizer.zero_grad()
         q_hat = self.scale * reward + self.gamma*value_
-        q1_old_policy = self.critic1.forward(state, action)
-        q2_old_policy = self.critic2.forward(state, action)
+        q1_old_policy = T.squeeze(self.critic1.forward(state, action))
+        q2_old_policy = T.squeeze(self.critic2.forward(state, action))
         critic_1_loss = 0.5 * F.mse_loss(q1_old_policy, q_hat)
         critic_2_loss = 0.5 * F.mse_loss(q2_old_policy, q_hat)
 
