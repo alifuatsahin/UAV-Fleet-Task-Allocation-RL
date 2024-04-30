@@ -1,8 +1,5 @@
 import numpy as np
 import random
-from db import row_insert_query
-import psycopg2.extensions
-import psycopg2
 import math
 
 pusher_bearing_factor = [1]

@@ -1,11 +1,13 @@
 import gym
 from gym import spaces
 import numpy as np
+from fleet import Fleet
 
 class UAVGymEnv(gym.Env):
     def __init__(self, uav_number):
         super(UAVGymEnv, self).__init__()
         self._uav_number = uav_number
+        self.Fleet = Fleet(uav_number)
         self._health_state_dim = 11 * self._uav_number
         self._max_distance = 100
         self._setupActionSpace()
@@ -38,7 +40,7 @@ class UAVGymEnv(gym.Env):
         pass
 
     def step(self, action):
-        self._fleet.ApplyAction(action)
+        self.Fleet.ApplyAction(action)
         reward = self._reward()
         done = True
         return np.array(self._getObservation()), reward, done, {}

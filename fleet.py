@@ -13,7 +13,7 @@ class Fleet:
         return [UAV(i) for i in range(size)]    # maybe give i+1 to match with their code if we get into problems (but should be fine)
 
     def reset(self):
-        self._uavs = self._generateUAVs(len(self._uavs))
+        [uav.health_initialization() for uav in self._uavs]
         
     def __len__(self):
         return len(self._uavs)
