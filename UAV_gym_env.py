@@ -34,7 +34,9 @@ class UAVGymEnv(gym.Env):
         return np.array([state])
 
     def _reward(self, done):
-        return 0 if done else 1
+        reward = 0 if done else 1
+        reward -= np.linalg.norm(1-self.Fleet.getStats()[:-1])
+        return reward
 
     def reset(self):
         self.Fleet.reset()

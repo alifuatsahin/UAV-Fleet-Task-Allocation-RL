@@ -16,7 +16,7 @@ if __name__ == "__main__":
     best_score = env.reward_range[0]
     score_history = []
     max_iter = 1000
-
+    total_iter = 0
     for i in range(n_games):
         observation = env.reset()
         done = False
@@ -30,13 +30,14 @@ if __name__ == "__main__":
             agent.learn()
             observation = observation_
             iter += 1
+            total_iter += 1
         score_history.append(score)
         avg_score = np.mean(score_history[-100:])
 
         if avg_score > best_score:
             best_score = avg_score
 
-        print('episode ', i, 'score %.1f' % score, 'avg_score %.1f' % avg_score)
+        print('episode ', i, 'score %.1f' % score, 'avg_score %.1f' % avg_score, 'total_iter %d' % total_iter)
 
 data = {
     'score': score_history,

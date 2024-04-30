@@ -17,9 +17,9 @@ class CriticNetwork(nn.Module):
 
         self.model = nn.Sequential(
             nn.Linear(*self.input_dims, self.fc1_dims),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(self.fc1_dims, self.fc2_dims),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(self.fc2_dims, 1)
         )
 
@@ -51,9 +51,9 @@ class ValueNetwork(nn.Module):
 
         self.model = nn.Sequential(
             nn.Linear(*self.input_dims, self.fc1_dims),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(self.fc1_dims, self.fc2_dims),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(self.fc2_dims, 1)
         )
 
@@ -86,9 +86,9 @@ class ActorNetwork(nn.Module):
 
         self.model = nn.Sequential(
             nn.Linear(*self.input_dims, self.fc1_dims),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(self.fc1_dims, self.fc2_dims),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(self.fc2_dims, self.n_actions),
             nn.Softplus()
         )
@@ -112,7 +112,7 @@ class ActorNetwork(nn.Module):
         self.load_state_dict(T.load(self.checkpoint_file))
 
     def sample_dirichlet(self, state):
-        alpha = self.forward(state)
+        alpha = self.forward(state) + 1 
         alpha = T.clamp(alpha, self.noise, 1-self.noise)
         dist = dirichlet.Dirichlet(alpha)
         actions = dist.sample()

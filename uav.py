@@ -196,6 +196,5 @@ class UAV:
             self.hover_bearing_health,
             self.hover_coil_health,
             np.array([self.pusher_bearing_health]),
-            np.array([self.pusher_coil_health]),
-            np.array([self.battery_level])
-        ))
+            np.array([self.pusher_coil_health]))
+        )

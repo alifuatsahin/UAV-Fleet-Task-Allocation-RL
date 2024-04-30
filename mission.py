@@ -15,6 +15,7 @@ class MissionGenerator:
     
     def generate(self):
         distance = random.randint(0, self._max_distance)
+        distance = 60
         self._history.append(distance)
         return distance
 
