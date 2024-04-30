@@ -1,11 +1,12 @@
 import gym
 import numpy as np
-from SAC import SAC
+from agent import Agent
 from gym import wrappers
+# from SAC import SAC
 
 if __name__ == '__main__':
-    env = gym.make('HalfCheetah-v4')
-    agent = SAC(input_dims=env.observation_space.shape, env=env,
+    env = gym.make('Humanoid-v4')
+    agent = Agent(input_dims = env.observation_space.shape, env=env,
             n_actions=env.action_space.shape[0])
     n_games = 250
 
@@ -17,7 +18,7 @@ if __name__ == '__main__':
         done = False
         score = 0
         max_iter = 0
-        while not done and max_iter < 500:
+        while not done and max_iter < 1000:
             action = agent.choose_action(observation)
             observation_, reward, done, _ , info = env.step(action)
             score += reward

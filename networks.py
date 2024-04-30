@@ -9,7 +9,7 @@ import torch.distributions.dirichlet as dirichlet
 class CriticNetwork(nn.Module):
     def __init__(self, beta, input_dims, n_actions, fc1_dims=256, fc2_dims=256, name = 'critic', chkpt_dir='tmp/sac'):
         super(CriticNetwork, self).__init__()
-        self.input_dims = input_dims
+        self.input_dims = (input_dims[0] + n_actions, )
         self.fc1_dims = fc1_dims
         self.fc2_dims = fc2_dims
         self.n_actions = n_actions
@@ -117,6 +117,6 @@ class ActorNetwork(nn.Module):
         dist = dirichlet.Dirichlet(alpha)
         actions = dist.sample()
         log_probs = dist.log_prob(actions)
-        log_probs = T.sum(log_probs, dim=1)
+        log_probs = T.sum(log_probs, dim=0)
 
         return actions, log_probs
