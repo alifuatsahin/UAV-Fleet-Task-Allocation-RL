@@ -1,6 +1,8 @@
 import numpy as np
 from agent import Agent
 from UAV_gym_env import UAVGymEnv
+import pandas as pd
+import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     env = UAVGymEnv(uav_number=5, max_distance=100)
@@ -35,3 +37,19 @@ if __name__ == "__main__":
             best_score = avg_score
 
         print('episode ', i, 'score %.1f' % score, 'avg_score %.1f' % avg_score)
+
+data = {
+    'score': score_history,
+    'episode number': range(n_games)
+}
+
+df = pd.DataFrame(data)
+df.to_csv('data.csv', index=False)
+
+fig, ax = plt.subplots()
+ax.plot(range(n_games), score_history)
+ax.set(xlabel='Episode', ylabel='Score',
+       title='Score vs Episode')
+
+fig.savefig("score.png")
+
