@@ -35,7 +35,6 @@ class Fleet:
         # rate = Rate(hz=20)
         while True:
             if not any(uav.inMission() for uav in self._uavs):
-                print(self.getStats()[0:12])
                 return self.hasFailed()
             # rate.sleep()    # release ressources for other threads
     
