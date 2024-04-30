@@ -2,14 +2,15 @@ import gym
 from gym import spaces
 import numpy as np
 from fleet import Fleet
+from mission import MissionGenerator
 
 class UAVGymEnv(gym.Env):
-    def __init__(self, uav_number):
+    def __init__(self, uav_number ,max_distance=100):
         super(UAVGymEnv, self).__init__()
         self._uav_number = uav_number
         self.Fleet = Fleet(uav_number)
-        self._health_state_dim = 11 * self._uav_number
-        self._max_distance = 100
+        self.MissionGenerator = MissionGenerator(max_distance)
+        self._health_state_dim = Fleet.getStats().shape[0]
         self._setupActionSpace()
         self._setupObservationSpace()
 
@@ -27,20 +28,18 @@ class UAVGymEnv(gym.Env):
         self.observation_space = spaces.Box(self._obs_low, self._obs_high, dtype=np.float32)
 
     def _getObservation(self):
-        return 0
+        distance = MissionGenerator.current()
+        state = np.concatenate(self.Fleet.getStats(), np.array([distance]))
+        return state
 
-    def _reward(self):
-        return 0
-    
-    def _checkHealth(self):
-        return False
+    def _reward(self, done):
+        return 1 if done else 0
 
     def reset(self):
-        # self._fleet = UAVfleet(self._uav_number)
-        pass
+        Fleet.reset()
 
     def step(self, action):
-        self.Fleet.ApplyAction(action)
+        distance = MissionGenerator.generate()
+        done = self.Fleet.executeMission(distance, action)
         reward = self._reward()
-        done = True
         return np.array(self._getObservation()), reward, done, {}

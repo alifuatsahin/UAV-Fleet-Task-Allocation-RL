@@ -6,7 +6,7 @@ import time
 from rate import Rate
 
 
-class SearchDistanceGenerator:
+class MissionGenerator:
     def __init__(self, max_distance, initial_count=1):
         self._max_distance = max_distance
         self._history = []
