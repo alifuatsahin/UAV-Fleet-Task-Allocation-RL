@@ -78,15 +78,15 @@ class Mission:
         self._uav.rem_mission_len = len(self._mission_profile) + self._mission_prep_time - 1
 
         # add mission initial status
-        rate = Rate(hz=20)
+        # rate = Rate(hz=20)
         for _ in range(self._mission_prep_time-1):
             self._uav.rem_mission_len = self._uav.rem_mission_len - 1
-            rate.sleep()
+            # rate.sleep()
 
         # start mission
         self._uav.mission_mode = 1 # SAR mission TODO: get rid of mission_mode
 
-        rate.reset()
+        # rate.reset()
         for i, mission_step in enumerate(self._mission_profile):
             self._uav.degradation(mission_step)  # new health values for single step
             self._uav.mission_progress = (i + 1) / len(self._mission_profile) * 100  # 100 - (1 - (len(mission[:i + 1]) / len(mission))) * 100
@@ -103,7 +103,7 @@ class Mission:
                 self._uav.stopMission()
                 return False
 
-            rate.sleep()
+            # rate.sleep()
 
         self._uav.stopMission()
         return True
