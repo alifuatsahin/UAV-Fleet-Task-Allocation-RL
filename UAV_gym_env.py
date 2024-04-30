@@ -43,5 +43,5 @@ class UAVGymEnv(gym.Env):
     def step(self, action):
         distance = self.MissionGenerator.generate()
         done = self.Fleet.executeMission(distance, action)
-        reward = self._reward()
+        reward = self._reward(done)
         return np.array(self._getObservation()), reward, done, {}
