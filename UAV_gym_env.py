@@ -31,10 +31,10 @@ class UAVGymEnv(gym.Env):
     def _getObservation(self):
         distance = self.MissionGenerator.current()
         state = np.append(self.Fleet.getStats(), distance)
-        return state
+        return np.array([state])
 
     def _reward(self, done):
-        return 1 if done else 0
+        return 0 if done else 1
 
     def reset(self):
         self.Fleet.reset()

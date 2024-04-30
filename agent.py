@@ -1,5 +1,6 @@
 import torch as T
 import torch.nn.functional as F
+import numpy as np
 
 from buffer import ReplayBuffer
 from networks import ActorNetwork, CriticNetwork, ValueNetwork
@@ -23,7 +24,7 @@ class Agent():
         self.update_network_parameters(tau=1)
 
     def choose_action(self, observation):
-        state = T.tensor([observation], dtype=T.float).to(self.actor.device)
+        state = T.tensor(observation, dtype=T.float).to(self.actor.device)
         actions, _ = self.actor.sample_dirichlet(state)
         action = actions.cpu().detach().numpy()[0]
         return action
