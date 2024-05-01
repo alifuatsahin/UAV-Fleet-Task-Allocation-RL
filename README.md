@@ -18,4 +18,4 @@ UAVFleetRL is a project that employs reinforcement learning techniques, specific
 Contributions to UAVFleetRL are encouraged! Whether it's enhancements to the reinforcement learning algorithms, improvements to task allocation strategies, or the addition of new features, feel free to fork the repository and submit a pull request.
 
 ## License
-This project is licensed under the [(https://github.com/alifuatsahin/UAV-Fleet-Task-Allocation-RL/blob/main/LICENSE.txt)](LICENSE).
+This project is licensed under the [MIT License](LICENSE).
