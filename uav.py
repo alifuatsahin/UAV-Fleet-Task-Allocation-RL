@@ -65,21 +65,21 @@ class UAV:
         for i in range(len(self.hover_bearing_factors)):
             self.hover_bearing_factors[i] = 1.0
         for i in range(len(self.hover_bearing_failure_appearance)):
-            self.hover_bearing_failure_appearance[i] = round(random.uniform(0.4, 0.75), 3)
+            self.hover_bearing_failure_appearance[i] = round(random.uniform(0.5, 0.55), 3)
 
         for i in range(len(self.hover_coil_health)):
             self.hover_coil_health[i] = random.uniform(0.95, 1.0)
         for i in range(len(self.hover_coil_factors)):
             self.hover_coil_factors[i] = 1.0
         for i in range(len(self.hover_coil_failure_appearance)):
-            self.hover_coil_failure_appearance[i] = round(random.uniform(0.75, 0.85), 3)
+            self.hover_coil_failure_appearance[i] = round(random.uniform(0.80, 0.85), 3)
 
         # initial pusher health
         self.pusher_bearing_health = random.uniform(0.95, 1.0)
-        self.pusher_bearing_failure_appearance = round(random.uniform(0.4, 0.5), 3)
+        self.pusher_bearing_failure_appearance = round(random.uniform(0.45, 0.5), 3)
 
         self.pusher_coil_health = random.uniform(0.95, 1.0)
-        self.pusher_coil_failure_appearance = round(random.uniform(0.8, 0.9), 3)
+        self.pusher_coil_failure_appearance = round(random.uniform(0.85, 0.9), 3)
 
         # initial battery health
         self.battery_level = 1
