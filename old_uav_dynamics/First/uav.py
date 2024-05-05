@@ -117,7 +117,7 @@ class UAV:
                     hover_bearing_deg_values[j] = round(random.uniform(1, 3) * 0.0001, 6)
                 else:
                     hover_bearing_deg_values[j] = self.hover_bearing_factors[j]*round((random.uniform(1, 3) * 0.0001), 6)
-                    self.hover_bearing_factors[j] = self.hover_bearing_factors[j] * 1.4
+                    self.hover_bearing_factors[j] = self.hover_bearing_factors[j] * 1.002
 
             self.hover_bearing_health -= hover_bearing_deg_values
 
