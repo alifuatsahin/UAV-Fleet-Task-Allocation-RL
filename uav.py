@@ -77,9 +77,11 @@ class UAV:
         # initial pusher health
         self.pusher_bearing_health = random.uniform(0.70, 1.0)
         self.pusher_bearing_failure_appearance = round(random.uniform(0.45, 0.5), 3)
+        self.pusher_bearing_factor = 1.0
 
         self.pusher_coil_health = random.uniform(0.90, 1.0)
         self.pusher_coil_failure_appearance = round(random.uniform(0.80, 0.85), 3)
+        self.pusher_coil_factor = 1.0
 
         # initial battery health
         self.battery_level = 1
@@ -115,7 +117,7 @@ class UAV:
                     hover_bearing_deg_values[j] = round(random.uniform(1, 3) * 0.0001, 6)
                 else:
                     hover_bearing_deg_values[j] = self.hover_bearing_factors[j]*round((random.uniform(1, 3) * 0.0001), 6)
-                    # self.hover_bearing_factors[j] = self.hover_bearing_factors[j] * 1.002
+                    self.hover_bearing_factors[j] = self.hover_bearing_factors[j] * 1.002
 
             self.hover_bearing_health -= hover_bearing_deg_values
 
@@ -126,7 +128,7 @@ class UAV:
                     hover_coil_deg_values[j] = round(random.uniform(0.00005, 0.0001), 5)
                 else:
                     hover_coil_deg_values[j] = self.hover_coil_factors[j]*round(random.uniform(0.00005, 0.0001), 5)
-                    # self.hover_coil_factors[j] = self.hover_coil_factors[j]*1.004
+                    self.hover_coil_factors[j] = self.hover_coil_factors[j]*1.004
 
             self.hover_coil_health -= hover_coil_deg_values
 
@@ -141,7 +143,7 @@ class UAV:
                 pusher_bearing_deg_rate = round(random.uniform(1, 3) * 0.000023, 6)
             else:
                 pusher_bearing_deg_rate = self.pusher_bearing_factor*round((random.uniform(1, 3) * 0.000023), 6)
-                # self.pusher_bearing_factor = self.pusher_bearing_factor*1.0004
+                self.pusher_bearing_factor = self.pusher_bearing_factor*1.0004
 
             self.pusher_bearing_health -= pusher_bearing_deg_rate
 
@@ -150,7 +152,7 @@ class UAV:
                 pusher_coil_deg_rate = round(random.uniform(1, 3) * 0.000005, 6)
             else:
                 pusher_coil_deg_rate = self.pusher_coil_factor*round(random.uniform(1, 3) * 0.000005, 6)
-                # self.pusher_coil_factor = self.pusher_coil_factor*1.002
+                self.pusher_coil_factor = self.pusher_coil_factor*1.002
 
             self.pusher_coil_health -= pusher_coil_deg_rate
 
