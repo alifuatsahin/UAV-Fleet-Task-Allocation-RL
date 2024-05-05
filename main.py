@@ -34,11 +34,11 @@ if __name__ == "__main__":
                 observation = observation_
                 iter += 1
                 total_iter += 1
-            score_history.append(score)
-            avg_score = np.mean(score_history[-100:])
+            avg_score = np.mean(score_history[-10:])
+            score_history.append(avg_score)
             episode += 1
-            if avg_score > best_score:
-                best_score = avg_score
+            if score > best_score:
+                best_score = score
 
             print('episode ', episode, 'score %.1f' % score, 'avg_score %.1f' % avg_score, 'total_iter %d' % total_iter)
 

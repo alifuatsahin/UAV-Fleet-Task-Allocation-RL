@@ -37,8 +37,8 @@ class UAVGymEnv(gym.Env):
     def _reward(self, done):
         reward = 0
         if not done:
-            reward = self.MissionGenerator.current()/self._max_distance
-        reward -= np.linalg.norm(self._last_health-self.Fleet.getStats()[:-1])
+            reward = self.MissionGenerator.current()
+        # reward -= np.linalg.norm(self._last_health-self.Fleet.getStats()[:-1])
         return reward
 
     def reset(self):
