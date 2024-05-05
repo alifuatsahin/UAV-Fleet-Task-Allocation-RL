@@ -20,9 +20,18 @@ def main():
 
     for i in range(n):
         fig, ax = plt.subplots()
+        if i in [0, 1, 2, 3]:
+            name = f"hover_bearing_health_{i+1}"
+        elif i in [4, 5, 6, 7]:
+            name = f"hover_coil_health_{i-3}"
+        elif i == 8:
+            name = "pusher_bearing_health"
+        elif i == 9:
+            name = "pusher_coil_health"
+
         ax.plot(health_data[:, i], label=f'health stat {i+1}')
         ax.legend()
-        file_path = os.path.join(os.path.dirname(__file__), f'health_stat_{i+1}.png')
+        file_path = os.path.join(os.path.dirname(__file__), f'{name}.png')
         plt.savefig(file_path)
         plt.close(fig)
 
