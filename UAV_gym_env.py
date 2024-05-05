@@ -1,21 +1,20 @@
 import gym
 from gym import spaces
 import numpy as np
-from uav import UAV
 from fleet import Fleet
-from mission import SearchDistanceGenerator
-
+from mission import MissionGenerator
 
 class UAVGymEnv(gym.Env):
-    def __init__(self, uav_number):
+    def __init__(self, uav_number ,max_distance=100):
         super(UAVGymEnv, self).__init__()
-        self._fleet = Fleet(size=uav_number)
-        param_count = 11
-        self._health_state_dim = param_count * len(self._fleet)
-        self._max_distance = 100
+        self._uav_number = uav_number
+        self._max_distance = max_distance
+        self.Fleet = Fleet(uav_number)
+        self.MissionGenerator = MissionGenerator(self._max_distance)
+        self._health_state_dim = self.Fleet.getStats().shape[0]
         self._setupActionSpace()
         self._setupObservationSpace()
-        self._mission_generator = SearchDistanceGenerator(self._max_distance)
+        self._last_health = self.Fleet.getStats()[:-1]
 
     def _setupActionSpace(self):
         self._action_lim = np.array([1] * len(self._fleet))
@@ -30,23 +29,25 @@ class UAVGymEnv(gym.Env):
 
         self.observation_space = spaces.Box(self._obs_low, self._obs_high, dtype=np.float32)
 
-    def _getObservation(self) -> np.ndarray:
-        return self._fleet.getStats()
+    def _getObservation(self):
+        distance = self.MissionGenerator.current()
+        state = np.append(self.Fleet.getStats(), distance)
+        return np.array([state])
 
-    def _reward(self):
-        return 0
-    
-    def _checkHealth(self):
-        return False
+    def _reward(self, done):
+        reward = 0
+        if not done:
+            reward = self.MissionGenerator.current()
+        # reward -= np.linalg.norm(self._last_health-self.Fleet.getStats()[:-1])
+        return reward
 
     def reset(self):
-        self._fleet.reset()
+        self.Fleet.reset()
+        return self._getObservation()
 
-    def step(self, action: np.ndarray):
-        total_search_distance = self._mission_generator.current()
-        success = self._fleet.executeMission(total_search_distance, action)
-        reward = self._reward()
-        terminated = not success
-        truncated = False
-        self._mission_generator.generate()
-        return np.array(self._getObservation()), reward, terminated, truncated, {}
+    def step(self, action):
+        self._last_health = self.Fleet.getStats()[:-1]
+        distance = self.MissionGenerator.generate()
+        done = self.Fleet.executeMission(distance, action)
+        reward = self._reward(done)
+        return np.array(self._getObservation()), reward, done, {}
