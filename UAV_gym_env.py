@@ -35,7 +35,8 @@ class UAVGymEnv(gym.Env):
         return np.array([state])
 
     def _reward(self, done):
-        reward = self.MissionGenerator.current()/self._max_distance
+        if done:
+            reward = self.MissionGenerator.current()/self._max_distance
         reward -= np.linalg.norm(self._last_health-self.Fleet.getStats()[:-1])
         return reward
 
