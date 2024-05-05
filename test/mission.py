@@ -3,7 +3,6 @@ import math
 import numpy as np
 import random
 import time
-from rate import Rate
 
 
 class MissionGenerator:
