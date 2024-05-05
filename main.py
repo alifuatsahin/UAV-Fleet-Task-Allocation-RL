@@ -18,7 +18,7 @@ if __name__ == "__main__":
     max_iter = 1000
     total_iter = 0
     episode = 0
-
+    avg_score_history = []
     try:
         while True:
             observation = env.reset()
@@ -35,7 +35,8 @@ if __name__ == "__main__":
                 iter += 1
                 total_iter += 1
             avg_score = np.mean(score_history[-10:])
-            score_history.append(avg_score)
+            score_history.append(score)
+            avg_score_history.append(avg_score)
             episode += 1
             if score > best_score:
                 best_score = score
@@ -52,7 +53,7 @@ if __name__ == "__main__":
         df.to_csv('data.csv', index=False)
 
         fig, ax = plt.subplots()
-        ax.plot(range(episode), score_history)
+        ax.plot(range(episode), avg_score_history)
         ax.set(xlabel='Episode', ylabel='Score',
             title='Score vs Episode')
 
