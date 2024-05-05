@@ -1,8 +1,5 @@
 import numpy as np
 import random
-from db import row_insert_query
-import psycopg2.extensions
-import psycopg2
 import math
 
 pusher_bearing_factor = [1]
@@ -25,11 +22,11 @@ class UAV:
         self.hover_bearing_factors = np.zeros(4)
         self.hover_coil_health = np.zeros(4)
         self.hover_coil_factors = np.zeros(4)
-        self.pusher_bearing_health = None
+        self.pusher_bearing_health = 0.0
         self.pusher_bearing_factor = 1
-        self.pusher_coil_health = None
+        self.pusher_coil_health = 0.0
         self.pusher_coil_factor = 1
-        self.battery_level = None
+        self.battery_level = 1.0
         self.battery_loading_cycles = 0
         self.hover_bearing_failure_appearance = np.empty(4)
         self.hover_coil_failure_appearance = np.empty(4)
@@ -41,13 +38,14 @@ class UAV:
         self.mission_progress = None
         self.rem_mission_len = 0
         self.health_initialization()
-        self.failure_detection = "False"
+        self.failure_detection = False  #"False"
         self.critic_comp = "Not yet detected!"
         self.rul = None
         self.contingency = "False"
         self.asset_risk = "False"
         self.mission_risk = "False"
 
+        self._in_mission = False
 
     def health_initialization(self) -> None:
         """Initialsiert die Gesundheitswerte der Motoren, deren failure-Appearance und die Ladung der Batterie.
@@ -63,25 +61,27 @@ class UAV:
 
         # initial hover health
         for i in range(len(self.hover_bearing_health)):
-            self.hover_bearing_health[i] = random.uniform(0.95, 1.0)
+            self.hover_bearing_health[i] = random.uniform(0.70, 1.0)
         for i in range(len(self.hover_bearing_factors)):
             self.hover_bearing_factors[i] = 1.0
         for i in range(len(self.hover_bearing_failure_appearance)):
-            self.hover_bearing_failure_appearance[i] = round(random.uniform(0.4, 0.75), 3)
+            self.hover_bearing_failure_appearance[i] = round(random.uniform(0.5, 0.55), 3)
 
         for i in range(len(self.hover_coil_health)):
-            self.hover_coil_health[i] = random.uniform(0.95, 1.0)
+            self.hover_coil_health[i] = random.uniform(0.90, 1.0)
         for i in range(len(self.hover_coil_factors)):
             self.hover_coil_factors[i] = 1.0
         for i in range(len(self.hover_coil_failure_appearance)):
-            self.hover_coil_failure_appearance[i] = round(random.uniform(0.75, 0.85), 3)
+            self.hover_coil_failure_appearance[i] = round(random.uniform(0.80, 0.85), 3)
 
         # initial pusher health
-        self.pusher_bearing_health = random.uniform(0.95, 1.0)
-        self.pusher_bearing_failure_appearance = round(random.uniform(0.4, 0.5), 3)
+        self.pusher_bearing_health = random.uniform(0.70, 1.0)
+        self.pusher_bearing_failure_appearance = round(random.uniform(0.45, 0.5), 3)
+        self.pusher_bearing_factor = 1.0
 
-        self.pusher_coil_health = random.uniform(0.95, 1.0)
-        self.pusher_coil_failure_appearance = round(random.uniform(0.8, 0.9), 3)
+        self.pusher_coil_health = random.uniform(0.90, 1.0)
+        self.pusher_coil_failure_appearance = round(random.uniform(0.80, 0.85), 3)
+        self.pusher_coil_factor = 1.0
 
         # initial battery health
         self.battery_level = 1
@@ -96,65 +96,6 @@ class UAV:
         """
         return min([*self.hover_bearing_health, *self.hover_coil_health,
                     self.pusher_bearing_health, self.pusher_coil_health])
-
-    def store_to_database(self, con: psycopg2.extensions.connection, cur: psycopg2.extensions.cursor) -> None:
-        """Schreibt die aktuellen Werte der Drohne in die entsprechend Datenbanktabelle
-
-        Args:
-            con(psycopg2.extensions.connection): Verbindung zur Datenbank
-            cur(): Cursor der Datenbank
-
-        Returns: None
-
-        """
-
-        cur.execute(row_insert_query.format(self.uav_id), self.get_array())
-        con.commit()  # commit changes
-
-    def get_array(self) -> np.ndarray:
-        """Gibt alle Werte der Drohne in Form eines numpy.arrays zurück.
-
-        Args: None
-
-        Returns:
-            np.array: Die Werte der Drohne
-        """
-        values = []
-
-        values.append(self.hbmx_count)
-        values.append(self.hbmx_count)
-        values.append(self.pbmx_count)
-        values.append(self.pbmx_count)
-        values.append(self.uav_id)
-        values.append(self.flight_mode)
-        values.extend(self.hover_bearing_health)
-        values.extend(self.hover_bearing_factors)
-        values.extend(self.hover_coil_health)
-        values.extend(self.hover_coil_factors)
-        values.append(self.pusher_bearing_health)
-        values.append(self.pusher_bearing_factor)
-        values.append(self.pusher_coil_health)
-        values.append(self.pusher_coil_factor)
-        values.append(self.battery_level)
-        values.append(self.battery_loading_cycles)
-        values.extend(self.hover_bearing_failure_appearance)
-        values.extend(self.hover_coil_failure_appearance)
-        values.append(self.pusher_bearing_failure_appearance)
-        values.append(self.pusher_coil_failure_appearance)
-        values.append(self.number_of_missions)
-        values.append(self.mission_mode)
-        values.append(self.mission_id)
-        values.append(self.mission_progress)
-        values.append(self.rem_mission_len)
-        values.append(self.health_index())
-        values.append(self.failure_detection)
-        values.append(self.critic_comp)
-        values.append(self.rul)
-        values.append(self.contingency)
-        values.append(self.asset_risk)
-        values.append(self.mission_risk)
-
-        return values
 
     def degradation(self, mission_mode: int) -> None:
         """Simuliert den Verschleiß der Motoren und die Entladung der Batterie abhängig vom aktuellen Missions-Modus.
@@ -219,3 +160,43 @@ class UAV:
             pusher_health_bat_fac = 1+((1-min(self.pusher_bearing_health, self.pusher_coil_health))*0.33)
             discharge_rate = round((random.uniform(0.003, 0.01)*pusher_health_bat_fac), 3)
             self.battery_level -= discharge_rate
+        
+    def detectFailure(self):
+        component_healths = []
+        component_healths.extend(list(self.hover_bearing_health))
+        component_healths.extend(list(self.hover_coil_health))
+        component_healths.append(float(self.pusher_bearing_health))
+        component_healths.append(float(self.pusher_coil_health))
+        component_healths = np.round(np.asarray(component_healths), 2)
+
+        component_failure_ths = []
+        component_failure_ths.extend(list(self.hover_bearing_failure_appearance))
+        component_failure_ths.extend(list(self.hover_coil_failure_appearance))
+        component_failure_ths.append(float(self.pusher_bearing_failure_appearance))
+        component_failure_ths.append(float(self.pusher_coil_failure_appearance))
+        component_failure_ths = np.round(np.asarray(component_failure_ths), 2)
+
+        health_difs = np.subtract(component_healths, component_failure_ths)
+        #self.failure_detection = '{}'.format(any(health_difs < 0))
+        self.failure_detection = any(health_difs < 0)
+        return self.failure_detection
+    
+    def startMission(self):    # TODO: coordinate this with other redundant attributes
+        self._in_mission = True
+    
+    def stopMission(self):     # TODO: coordinate this with other redundant attributes
+        self._in_mission = False
+
+    def inMission(self) -> bool:
+        return self._in_mission
+    
+    def hasFailed(self) -> bool:
+        return self.failure_detection
+
+    def getStats(self) -> np.ndarray:
+        return np.concatenate((
+            self.hover_bearing_health,
+            self.hover_coil_health,
+            np.array([self.pusher_bearing_health]),
+            np.array([self.pusher_coil_health]))
+        )
