@@ -14,6 +14,7 @@ class UAVGymEnv(gym.Env):
         self._health_state_dim = self.Fleet.getStats().shape[0]
         self._setupActionSpace()
         self._setupObservationSpace()
+        self._last_health = self.Fleet.getStats()[:-1]
 
     def _setupActionSpace(self):
         self._action_lim = np.array([1] * self._uav_number)
@@ -34,8 +35,8 @@ class UAVGymEnv(gym.Env):
         return np.array([state])
 
     def _reward(self, done):
-        reward = 0 if done else 1
-        reward -= np.linalg.norm(1-self.Fleet.getStats()[:-1])
+        reward = self.MissionGenerator.current()/self._max_distance
+        reward -= np.linalg.norm(self._last_health-self.Fleet.getStats()[:-1])
         return reward
 
     def reset(self):
@@ -43,6 +44,7 @@ class UAVGymEnv(gym.Env):
         return self._getObservation()
 
     def step(self, action):
+        self._last_health = self.Fleet.getStats()[:-1]
         distance = self.MissionGenerator.generate()
         done = self.Fleet.executeMission(distance, action)
         reward = self._reward(done)
