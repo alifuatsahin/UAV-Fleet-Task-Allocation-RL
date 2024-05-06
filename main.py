@@ -3,6 +3,9 @@ from agent import Agent
 from UAV_gym_env import UAVGymEnv
 import pandas as pd
 import matplotlib.pyplot as plt
+from uav import UAVStats
+from stats import Statistics
+
 
 if __name__ == "__main__":
     env = UAVGymEnv(uav_number=5, max_distance=100)
@@ -34,6 +37,11 @@ if __name__ == "__main__":
                 observation = observation_
                 iter += 1
                 total_iter += 1
+                
+            # example plotting
+            env.plot_degradation(UAVStats.PUSHER_BEARING_HEALTH, uav_index=None)
+            plt.show()
+            
             avg_score = np.mean(score_history[-10:])
             score_history.append(score)
             avg_score_history.append(avg_score)
