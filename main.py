@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     env = UAVGymEnv(uav_number=5, max_distance=100)
-    agent = Agent(alpha=0.0003, beta=0.0003, 
+    agent = Agent(alpha=0.0003, lr=0.0003, 
                   input_dims=[env.observation_space.shape[0]], 
                   tau=0.005, scale=2, env=env, gamma=0.99, 
                   n_actions=env.action_space.shape[0], max_size=1000000, 

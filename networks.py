@@ -10,7 +10,7 @@ def init_weights(m):
         m.bias.data.fill_(0)
 
 class CriticNetwork(nn.Module):
-    def __init__(self, beta, input_dims, n_actions, fc1_dims=256, fc2_dims=256, name = 'critic', chkpt_dir='tmp/sac'):
+    def __init__(self, beta, input_dims, n_actions, lr, fc1_dims=256, fc2_dims=256, name = 'critic', chkpt_dir='tmp/sac'):
         super(CriticNetwork, self).__init__()
         self.input_dims = (input_dims[0] + n_actions, )
         self.fc1_dims = fc1_dims
@@ -55,7 +55,7 @@ class CriticNetwork(nn.Module):
         self.load_state_dict(T.load(self.checkpoint_file))
 
 class ActorNetwork(nn.Module):
-    def __init__(self, alpha, input_dims, n_actions, fc1_dims=256, fc2_dims=256, name = 'actor', chkpt_dir='tmp/sac'):
+    def __init__(self, lr, input_dims, n_actions, fc1_dims=256, fc2_dims=256, name = 'actor', chkpt_dir='tmp/sac'):
         super(ActorNetwork, self).__init__()
         self.input_dims = input_dims
         self.fc1_dims = fc1_dims
@@ -75,7 +75,7 @@ class ActorNetwork(nn.Module):
 
         self.model.apply(init_weights)
 
-        self.optimizer = optim.Adam(self.model.parameters(), lr=alpha)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
 
     def forward(self, state):
         alpha = self.model(state)

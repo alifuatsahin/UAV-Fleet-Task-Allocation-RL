@@ -6,7 +6,7 @@ from networks import ActorNetwork, CriticNetwork
 from utils import soft_update, hard_update
 
 class Agent():
-    def __init__(self, alpha=0.0003, beta=0.0003, 
+    def __init__(self, alpha=0.0003, lr=0.0003, 
                  input_dims=[8], tau=0.005, 
                  scale=2, env=None, 
                  gamma=0.99, n_actions=2, 
@@ -15,9 +15,10 @@ class Agent():
                  auto_entropy=True
                  ):
         self.gamma = gamma
+        self.alpha = alpha
         self.tau = tau
         self.scale = scale
-        self.beta = beta
+        self.lr = lr
         self.auto_entropy = auto_entropy
         self.memory = ReplayBuffer(max_size, input_dims, n_actions)
         self.batch_size = batch_size
@@ -29,16 +30,15 @@ class Agent():
         if self.auto_entropy:
             self.target_entropy = -T.prod(T.tensor(n_actions).to(self.device)).item()
             self.log_alpha = T.zeros(1, requires_grad=True, device=self.device)
-            self.alpha = self.log_alpha.exp()
-            self.alpha_optimizer = T.optim.Adam([self.log_alpha], lr=alpha)
+            self.alpha_optimizer = T.optim.Adam([self.log_alpha], lr=lr)
         else:
-            self.alpha = alpha
+            self.alpha = 0
 
-        self.actor = ActorNetwork(self.alpha, input_dims, n_actions, layer1_size, layer2_size, name='actor').to(self.device)
+        self.actor = ActorNetwork(self.lr, input_dims, n_actions, layer1_size, layer2_size, name='actor').to(self.device)
 
-        self.critic = CriticNetwork(self.beta, input_dims, n_actions, layer1_size, layer2_size, name='critic_1').to(self.device)
+        self.critic = CriticNetwork(self.lr, input_dims, n_actions, layer1_size, layer2_size, name='critic_1').to(self.device)
 
-        self.critic_target = CriticNetwork(self.beta, input_dims, n_actions,layer1_size, layer2_size, name='critic_2').to(self.device)
+        self.critic_target = CriticNetwork(self.lr, input_dims, n_actions,layer1_size, layer2_size, name='critic_2').to(self.device)
 
         hard_update(self.critic_target, self.critic)
 
@@ -56,8 +56,8 @@ class Agent():
         
         state, new_state, action, reward, done = self.memory.sample(self.batch_size)
 
-        reward = T.tensor(reward, dtype=T.float).to(self.device)
-        done = T.tensor(done).to(self.device)
+        reward = T.tensor(reward, dtype=T.float).to(self.device).unsqueeze(1)
+        done = T.tensor(done).to(self.device).unsqueeze(1)
         new_state = T.tensor(new_state, dtype=T.float).to(self.device)
         state = T.tensor(state, dtype=T.float).to(self.device)
         action = T.tensor(action, dtype=T.float).to(self.device)
@@ -66,12 +66,9 @@ class Agent():
             actions, log_probs = self.actor.sample_dirichlet(state)
             q1_new, q2_new = self.critic_target.forward(new_state, actions)
             q_new = T.min(q1_new, q2_new) - self.alpha * log_probs
-            q_new = q_new.view(-1)
             next_q = reward + done * self.gamma * q_new
 
         qf1, qf2 = self.critic.forward(state, action) # Two Q functions to eliminate positive bias
-        qf1 = qf1.view(-1)
-        qf2 = qf2.view(-1)
         qf1_loss = F.mse_loss(qf1, next_q) # JQ = 𝔼(st,at)~D[0.5(Q1(st,at) - r(st,at) - γ(𝔼st+1~p[V(st+1)]))^2]
         qf2_loss = F.mse_loss(qf2, next_q)
         critic_loss = qf1_loss + qf2_loss
@@ -92,7 +89,7 @@ class Agent():
         self.actor.optimizer.step()
 
         if self.auto_entropy:
-            alpha_loss = -T.mean(self.alpha * (log_probs + self.target_entropy))
+            alpha_loss = -T.mean(self.log_alpha * (log_probs + self.target_entropy).detach())
 
             self.alpha_optimizer.zero_grad()
             alpha_loss.backward()
@@ -102,7 +99,7 @@ class Agent():
             alpha_tlogs = self.alpha.clone()
         else:
             alpha_loss = T.tensor(0.).to(self.device)
-            alpha_tlogs = self.alpha
+            alpha_tlogs = T.tensor(self.alpha)
 
         soft_update(self.critic_target, self.critic, self.tau)
 
