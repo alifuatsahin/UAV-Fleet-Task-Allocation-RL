@@ -12,14 +12,13 @@ class UAV:
     LANDING_TIME = 2  # in minutes
 
     def __init__(self, uav_id: int):
-        self.hbmx_count = 0
-        self.hcmx_count = 0
-        self.pbmx_count = 0
-        self.pcmx_count = 0
         self.uav_id = uav_id
         self.flight_mode = None
         self.hover_bearing_health = np.zeros(4)
         self.hover_bearing_factors = np.zeros(4)
+        self.bearing_initial_factor = 0.9998
+        self.bearing_defect_factor = 1.001
+        self.bearing_failure_factor = 1.006
         self.hover_coil_health = np.zeros(4)
         self.hover_coil_factors = np.zeros(4)
         self.pusher_bearing_health = 0.0
@@ -28,6 +27,7 @@ class UAV:
         self.pusher_coil_factor = 1
         self.battery_level = 1.0
         self.battery_loading_cycles = 0
+        self.hover_bearing_defect_appearance = np.empty(4)
         self.hover_bearing_failure_appearance = np.empty(4)
         self.hover_coil_failure_appearance = np.empty(4)
         self.pusher_bearing_failure_appearance = None
@@ -61,11 +61,13 @@ class UAV:
 
         # initial hover health
         for i in range(len(self.hover_bearing_health)):
-            self.hover_bearing_health[i] = random.uniform(0.80, 1.0)
+            self.hover_bearing_health[i] = random.uniform(0.85, 1.0)
         for i in range(len(self.hover_bearing_factors)):
-            self.hover_bearing_factors[i] = 1.0
+            self.hover_bearing_factors[i] = self.bearing_initial_factor
+        for i in range(len(self.hover_bearing_defect_appearance)):
+            self.hover_bearing_defect_appearance[i] = round(random.uniform(0.65, 0.70), 3)
         for i in range(len(self.hover_bearing_failure_appearance)):
-            self.hover_bearing_failure_appearance[i] = round(random.uniform(0.5, 0.55), 3)
+            self.hover_bearing_failure_appearance[i] = round(random.uniform(0.45, 0.50), 3)
 
         for i in range(len(self.hover_coil_health)):
             self.hover_coil_health[i] = random.uniform(0.90, 1.0)
@@ -113,12 +115,15 @@ class UAV:
             """Hover bearing degradation:"""
             hover_bearing_deg_values = np.empty(len(self.hover_bearing_health))
             for j in range(len(self.hover_bearing_health)):
-                if self.hover_bearing_health[j] > self.hover_bearing_failure_appearance[j]:
+                if self.hover_bearing_health[j] > self.hover_bearing_defect_appearance[j]:
                     hover_bearing_deg_values[j] = self.hover_bearing_factors[j]*round(random.uniform(1, 3) * 0.0001, 6)
-                    self.hover_bearing_factors[j] *= 1.001
+                    self.hover_bearing_factors[j] *= self.bearing_initial_factor
+                elif self.hover_bearing_health[j] > self.hover_bearing_failure_appearance[j]:
+                    hover_bearing_deg_values[j] = self.hover_bearing_factors[j]*round(random.uniform(1, 3) * 0.0001, 6)
+                    self.hover_bearing_factors[j] *= self.bearing_defect_factor
                 else:
                     hover_bearing_deg_values[j] = self.hover_bearing_factors[j]*round((random.uniform(1, 3) * 0.0001), 6)
-                    self.hover_bearing_factors[j] *= 1.006
+                    self.hover_bearing_factors[j] *= self.bearing_failure_factor
 
             self.hover_bearing_health -= hover_bearing_deg_values
 

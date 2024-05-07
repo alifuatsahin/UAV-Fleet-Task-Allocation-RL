@@ -1,9 +1,7 @@
 import os
 import torch as T
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
-import numpy as np
 import torch.distributions.dirichlet as dirichlet
 
 def init_weights(m):
@@ -20,7 +18,7 @@ class CriticNetwork(nn.Module):
         self.n_actions = n_actions
         self.checkpoint_file = os.path.join(chkpt_dir, name+'_sac')
 
-        self.model = nn.Sequential(
+        self.modelQ1 = nn.Sequential(
             nn.Linear(*self.input_dims, self.fc1_dims),
             nn.LeakyReLU(),
             nn.Linear(self.fc1_dims, self.fc2_dims),
@@ -28,52 +26,26 @@ class CriticNetwork(nn.Module):
             nn.Linear(self.fc2_dims, 1)
         )
 
-        self.model.apply(init_weights)
+        self.modelQ1.apply(init_weights)
 
-        self.optimizer = optim.Adam(self.parameters(), lr=beta)
+        self.modelQ2 = nn.Sequential(
+            nn.Linear(*self.input_dims, self.fc1_dims),
+            nn.LeakyReLU(),
+            nn.Linear(self.fc1_dims, self.fc2_dims),
+            nn.LeakyReLU(),
+            nn.Linear(self.fc2_dims, 1)
+        )
 
-        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
-        self.to(self.device)
+        self.modelQ2.apply(init_weights)
+
+        self.optimizerQ1 = optim.Adam(self.modelQ1.parameters(), lr=beta)
+        self.optimizerQ2 = optim.Adam(self.modelQ2.parameters(), lr=beta)
 
     def forward(self, state, action):
-        q = self.model(T.cat([state, action], dim=1))
+        q1 = self.modelQ1(T.cat([state, action], dim=1))
+        q2 = self.modelQ2(T.cat([state, action], dim=1))
 
-        return q
-    
-    def save_checkpoint(self):
-        print('... saving checkpoint ...')
-        T.save(self.state_dict(), self.checkpoint_file)
-
-    def load_checkpoint(self):
-        print('... loading checkpoint ...')
-        self.load_state_dict(T.load(self.checkpoint_file))
-
-class ValueNetwork(nn.Module):
-    def __init__(self, beta, input_dims, fc1_dims=256, fc2_dims=256, name = 'value', chkpt_dir='tmp/sac'):
-        super(ValueNetwork, self).__init__()
-        self.input_dims = input_dims
-        self.fc1_dims = fc1_dims
-        self.fc2_dims = fc2_dims
-        self.checkpoint_file = os.path.join(chkpt_dir, name+'_sac')
-
-        self.model = nn.Sequential(
-            nn.Linear(*self.input_dims, self.fc1_dims),
-            nn.LeakyReLU(),
-            nn.Linear(self.fc1_dims, self.fc2_dims),
-            nn.LeakyReLU(),
-            nn.Linear(self.fc2_dims, 1)
-        )
-
-        self.model.apply(init_weights)
-
-        self.optimizer = optim.Adam(self.parameters(), lr=beta)
-
-        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
-        self.to(self.device)
-
-    def forward(self, state):
-        v = self.model(state)
-        return v
+        return q1, q2
     
     def save_checkpoint(self):
         print('... saving checkpoint ...')
@@ -104,10 +76,7 @@ class ActorNetwork(nn.Module):
 
         self.model.apply(init_weights)
 
-        self.optimizer = optim.Adam(self.parameters(), lr=alpha)
-
-        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
-        self.to(self.device)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=alpha)
 
     def forward(self, state):
         alpha = self.model(state)

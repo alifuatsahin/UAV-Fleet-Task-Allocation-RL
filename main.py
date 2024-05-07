@@ -30,7 +30,7 @@ if __name__ == "__main__":
                 observation_, reward, done, info = env.step(action)
                 score += reward
                 agent.remember(observation, action, reward, observation_, done)
-                agent.learn()
+                agent.update()
                 observation = observation_
                 iter += 1
                 total_iter += 1

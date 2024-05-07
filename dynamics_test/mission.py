@@ -90,12 +90,12 @@ class Mission:
             self._uav.degradation(mission_step)  # new health values for single step
             self._uav.mission_progress = (i + 1) / len(self._mission_profile) * 100  # 100 - (1 - (len(mission[:i + 1]) / len(mission))) * 100
             self._uav.rem_mission_len = self._uav.rem_mission_len - 1
-            if self._uav.flight_mode == 1:
-                self._uav.hbmx_count = self._uav.hbmx_count + 1
-                self._uav.hcmx_count = self._uav.hcmx_count + 1
-            if self._uav.flight_mode == 2:
-                self._uav.pbmx_count = self._uav.pbmx_count + 1
-                self._uav.pcmx_count = self._uav.pcmx_count + 1
+            # if self._uav.flight_mode == 1:
+            #     self._uav.hbmx_count = self._uav.hbmx_count + 1
+            #     self._uav.hcmx_count = self._uav.hcmx_count + 1
+            # if self._uav.flight_mode == 2:
+            #     self._uav.pbmx_count = self._uav.pbmx_count + 1
+            #     self._uav.pcmx_count = self._uav.pcmx_count + 1
 
             # DnP part
             if self._uav.detectFailure():
