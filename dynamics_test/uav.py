@@ -132,10 +132,10 @@ class UAV:
             for j in range(len(self.hover_coil_health)):
                 if self.hover_coil_health[j] > self.hover_coil_failure_appearance[j]:
                     hover_coil_deg_values[j] = self.hover_coil_factors[j]*round(random.uniform(0.00005, 0.0001), 5)
-                    self.hover_coil_factors[j] *= 1.001
+                    self.hover_coil_factors[j] *= 1
                 else:
                     hover_coil_deg_values[j] = self.hover_coil_factors[j]*round(random.uniform(0.00005, 0.0001), 5)
-                    self.hover_coil_factors[j] *= 1.004
+                    self.hover_coil_factors[j] *= 1
 
             self.hover_coil_health -= hover_coil_deg_values
 

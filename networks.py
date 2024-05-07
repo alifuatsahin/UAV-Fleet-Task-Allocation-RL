@@ -38,8 +38,7 @@ class CriticNetwork(nn.Module):
 
         self.modelQ2.apply(init_weights)
 
-        self.optimizerQ1 = optim.Adam(self.modelQ1.parameters(), lr=beta)
-        self.optimizerQ2 = optim.Adam(self.modelQ2.parameters(), lr=beta)
+        self.optimizer = optim.Adam(self.parameters(), lr=beta)
 
     def forward(self, state, action):
         q1 = self.modelQ1(T.cat([state, action], dim=1))

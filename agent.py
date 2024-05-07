@@ -35,7 +35,9 @@ class Agent():
             self.alpha = alpha
 
         self.actor = ActorNetwork(self.alpha, input_dims, n_actions, layer1_size, layer2_size, name='actor').to(self.device)
+
         self.critic = CriticNetwork(self.beta, input_dims, n_actions, layer1_size, layer2_size, name='critic_1').to(self.device)
+
         self.critic_target = CriticNetwork(self.beta, input_dims, n_actions,layer1_size, layer2_size, name='critic_2').to(self.device)
 
         hard_update(self.critic_target, self.critic)
@@ -68,13 +70,14 @@ class Agent():
             next_q = reward + done * self.gamma * q_new
 
         qf1, qf2 = self.critic.forward(state, action) # Two Q functions to eliminate positive bias
+        qf1 = qf1.view(-1)
+        qf2 = qf2.view(-1)
         qf1_loss = F.mse_loss(qf1, next_q) # JQ = 𝔼(st,at)~D[0.5(Q1(st,at) - r(st,at) - γ(𝔼st+1~p[V(st+1)]))^2]
         qf2_loss = F.mse_loss(qf2, next_q)
         critic_loss = qf1_loss + qf2_loss
 
         self.critic.optimizer.zero_grad()
         critic_loss.backward()
-        
         self.critic.optimizer.step()
 
         actions, log_probs = self.actor.sample_dirichlet(state)

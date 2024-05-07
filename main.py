@@ -34,7 +34,10 @@ if __name__ == "__main__":
                 observation = observation_
                 iter += 1
                 total_iter += 1
-            avg_score = np.mean(score_history[-10:])
+            if iter > 10:
+                avg_score = np.mean(score_history[-10:])
+            else:
+                avg_score = np.mean(score_history)
             score_history.append(score)
             avg_score_history.append(avg_score)
             episode += 1
