@@ -44,7 +44,7 @@ class Agent():
 
     def choose_action(self, observation):
         state = T.tensor(observation, dtype=T.float).to(self.device)
-        actions, _ = self.actor.sample_dirichlet(state)
+        actions, _ = self.actor.sample_gaussian(state)
         return actions.cpu().detach().numpy()[0]
     
     def remember(self, state, action, reward, new_state, done):
@@ -63,7 +63,7 @@ class Agent():
         action = T.tensor(action, dtype=T.float).to(self.device)
 
         with T.no_grad():
-            actions, log_probs = self.actor.sample_dirichlet(state)
+            actions, log_probs = self.actor.sample_gaussian(state)
             q1_new, q2_new = self.critic_target.forward(new_state, actions)
             q_new = T.min(q1_new, q2_new) - self.alpha * log_probs
             next_q = reward + done * self.gamma * q_new
@@ -77,7 +77,7 @@ class Agent():
         critic_loss.backward()
         self.critic.optimizer.step()
 
-        actions, log_probs = self.actor.sample_dirichlet(state)
+        actions, log_probs = self.actor.sample_gaussian(state)
 
         q1, q2 = self.critic.forward(state, actions)
         q = T.min(q1, q2)

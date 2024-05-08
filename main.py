@@ -10,7 +10,7 @@ if __name__ == "__main__":
                   input_dims=[env.observation_space.shape[0]], 
                   tau=0.005, scale=2, env=env, gamma=0.99, 
                   n_actions=env.action_space.shape[0], max_size=1000000, 
-                  layer1_size=256, layer2_size=256, batch_size=256)
+                  layer1_size=256, layer2_size=256, batch_size=256, auto_entropy=True)
     n_games = 250
 
     best_score = env.reward_range[0]

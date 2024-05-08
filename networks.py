@@ -3,6 +3,10 @@ import torch as T
 import torch.nn as nn
 import torch.optim as optim
 import torch.distributions.dirichlet as dirichlet
+from torch.distributions import Normal
+
+LOG_SIG_MAX = 2
+LOG_SIG_MIN = -20
 
 def init_weights(m):
     if type(m) == nn.Linear:
@@ -70,17 +74,24 @@ class ActorNetwork(nn.Module):
             nn.Linear(self.fc1_dims, self.fc2_dims),
             nn.Tanh(),
             nn.Linear(self.fc2_dims, self.n_actions),
-            nn.Softplus()
+            nn.LeakyReLU()
         )
 
+        self.mean_linear = nn.Linear(self.n_actions,  self.n_actions)
+        self.log_std_linear = nn.Linear(self.n_actions, self.n_actions)
+        
         self.model.apply(init_weights)
 
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
 
     def forward(self, state):
-        alpha = self.model(state)
+        mean = T.relu(self.mean_linear(self.model(state))) + self.noise
 
-        return alpha
+        log_std = T.relu(self.log_std_linear(self.model(state))) + self.noise
+        
+        log_std = T.clamp(log_std, min=LOG_SIG_MIN, max=LOG_SIG_MAX)
+        return mean, log_std
+
     
     def save_checkpoint(self):
         print('... saving checkpoint ...')
@@ -94,6 +105,15 @@ class ActorNetwork(nn.Module):
         alpha = self.forward(state) + 1 
         alpha = T.clamp(alpha, self.noise, 1-self.noise)
         dist = dirichlet.Dirichlet(alpha)
+        actions = dist.sample()
+        log_probs = dist.log_prob(actions)
+        log_probs = T.sum(log_probs, dim=0)
+
+        return actions, log_probs
+
+    def sample_gaussian(self, state):
+        mu, sigma = self.forward(state)
+        dist = Normal(mu, sigma)
         actions = dist.sample()
         log_probs = dist.log_prob(actions)
         log_probs = T.sum(log_probs, dim=0)
