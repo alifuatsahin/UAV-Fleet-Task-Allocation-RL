@@ -6,6 +6,11 @@ import torch.optim as optim
 import numpy as np
 import torch.distributions.dirichlet as dirichlet
 
+def init_weights(m):
+    if type(m) == nn.Linear:
+        nn.init.xavier_uniform_(m.weight, gain=1)
+        m.bias.data.fill_(0)
+
 class CriticNetwork(nn.Module):
     def __init__(self, beta, input_dims, n_actions, fc1_dims=256, fc2_dims=256, name = 'critic', chkpt_dir='tmp/sac'):
         super(CriticNetwork, self).__init__()
@@ -22,6 +27,8 @@ class CriticNetwork(nn.Module):
             nn.LeakyReLU(),
             nn.Linear(self.fc2_dims, 1)
         )
+
+        self.model.apply(init_weights)
 
         self.optimizer = optim.Adam(self.parameters(), lr=beta)
 
@@ -56,6 +63,8 @@ class ValueNetwork(nn.Module):
             nn.LeakyReLU(),
             nn.Linear(self.fc2_dims, 1)
         )
+
+        self.model.apply(init_weights)
 
         self.optimizer = optim.Adam(self.parameters(), lr=beta)
 
@@ -92,6 +101,8 @@ class ActorNetwork(nn.Module):
             nn.Linear(self.fc2_dims, self.n_actions),
             nn.Softplus()
         )
+
+        self.model.apply(init_weights)
 
         self.optimizer = optim.Adam(self.parameters(), lr=alpha)
 
