@@ -52,25 +52,33 @@ class UAVGymEnv(gym.Env):
     def step(self, action):
         self._statistics.step(self.Fleet.getStats())
         self._last_health = self.Fleet.getStats()[:-1]
-        distance = self.MissionGenerator.generate()
+        distance = self.MissionGenerator.current()
         done = self.Fleet.executeMission(distance, action)
+        self.MissionGenerator.generate()
         reward = self._reward(done)
         return np.array(self._getObservation()), reward, done, {}
 
-    def plot_degradation(self, metric: int, uav_index: int = None, plot_strategy: int = None, metric_subindex: int = None):
+    def plot_one_metric(self, metric: int, uav_index: int = None, plot_strategy: int = None, metric_subindex: int = None):
         """
+        Plot a certain metric for one or all UAVs
         Example usages:
-            # a single value metric such as PUSHER_BEARING_HEALTH can be plotted for all UAVs on the same graph (not supported yet for multivalue metrics)
-            >>> env.plot_degradation(UAVStats.PUSHER_BEARING_HEALTH, uav_index=None)
+            # a single value metric such as PUSHER_BEARING_HEALTH can be plotted for all UAVs on the same graph
+            >>> env.plot_one_metric(UAVStats.PUSHER_BEARING_HEALTH, uav_index=None)
             
             # multivalue metric HOVER_BEARING_HEALTH plotted for uav index 0 (the lowest health among the 4 hover bearings plotted at each step)
-            >>> env.plot_degradation(UAVStats.HOVER_BEARING_HEALTH, uav_index=0, plot_strategy=Statistics.LOWEST)
+            >>> env.plot_one_metric(UAVStats.HOVER_BEARING_HEALTH, uav_index=0, plot_strategy=Statistics.LOWEST)
             
             # multivalue metric HOVER_BEARING_HEALTH plotted for uav index 1 (health of bearing 0 plotted at each step)
-            >>> env.plot_degradation(UAVStats.HOVER_BEARING_HEALTH, uav_index=1, plot_strategy=Statistics.INDIVIDUAL, metric_subindex=0)
+            >>> env.plot_one_metric(UAVStats.HOVER_BEARING_HEALTH, uav_index=1, plot_strategy=Statistics.INDIVIDUAL, metric_subindex=0)
             
             
-        For more details, see Statistics.plot_degradation.
+        For more details, see Statistics.plot_one_metric.
         """
-        self._statistics.plot_degradation(metric, uav_index, plot_strategy, metric_subindex, fleet_length=self._uav_number)
+        self._statistics.plot_one_metric(metric, uav_index, plot_strategy, metric_subindex, fleet_length=self._uav_number)
 
+    def plot_all_metrics(self, uav_index: int, plot_strategy: int = None, metric_subindex: int = None):
+        """
+        Plot all metrics for a single UAV
+        see Statistic.plot_all_metrics
+        """
+        self._statistics.plot_all_metrics(uav_index, plot_strategy, metric_subindex)
