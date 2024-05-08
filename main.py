@@ -39,7 +39,8 @@ if __name__ == "__main__":
                 total_iter += 1
                 
             # example plotting
-            env.plot_degradation(UAVStats.PUSHER_BEARING_HEALTH, uav_index=None)
+            #env.plot_degradation(UAVStats.PUSHER_BEARING_HEALTH, uav_index=None)
+            env.plot_degradation(UAVStats.HOVER_BEARING_HEALTH, uav_index=None, plot_strategy=Statistics.LOWEST)
             plt.show()
             
             avg_score = np.mean(score_history[-10:])

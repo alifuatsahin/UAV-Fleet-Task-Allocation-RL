@@ -72,5 +72,5 @@ class UAVGymEnv(gym.Env):
             
         For more details, see Statistics.plot_degradation.
         """
-        self._statistics.plot_degradation(metric, uav_index, plot_strategy, metric_subindex)
+        self._statistics.plot_degradation(metric, uav_index, plot_strategy, metric_subindex, fleet_length=self._uav_number)
 

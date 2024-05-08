@@ -26,7 +26,18 @@ class Statistics:
         self._degradations.append(degradation)
         self._total_history_degradations.append(degradation)
     
-    def plot_degradation(self, metric: int, uav_index: int = None, plot_strategy: int = None, metric_subindex: int = None):
+    def aaa(self, degradations, metric, uav_index, plot_strategy, metric_subindex):
+        metric_vals = UAVStats.get_metric(degradations, metric, uav_index)
+        if metric in UAVStats.MULTIVALUE_METRICS:
+            if plot_strategy == self.INDIVIDUAL: metric_vals = metric_vals[metric_subindex]
+            elif plot_strategy == self.AVERAGE: metric_vals = metric_vals.sum(axis=0)
+            elif plot_strategy == self.LOWEST: metric_vals = metric_vals.min(axis=0)
+            elif plot_strategy == self.HIGHEST: metric_vals = metric_vals.max(axis=0)
+            else:
+                raise   # TODO
+        return metric_vals
+
+    def plot_degradation(self, metric: int, uav_index: int = None, plot_strategy: int = None, metric_subindex: int = None, fleet_length=0):
         # TODO: implement plot strategies also between UAVs not only between subindices of a multivalue metric
         # TODO: maybe split this function into multiple functions with more specific usages for more simplicity of API
         """
@@ -43,22 +54,24 @@ class Statistics:
         metric_subindex:
             Only needs to be specified for multiple value metrics when plot strategy is INDIVIDUAL
         """
-        
-        if uav_index is None and metric in UAVStats.MULTIVALUE_METRICS:
-            raise NotImplementedError("plotting values for all UAVs on the same graph not implemented yet for multivalue metrics, please specify a uav index")
         degradations = np.stack(self._degradations, axis=-1)
-        metric_vals = UAVStats.get_metric(degradations, metric, uav_index)
-        if metric in UAVStats.MULTIVALUE_METRICS:
-            if plot_strategy == self.INDIVIDUAL: metric_vals = metric_vals[metric_subindex]
-            elif plot_strategy == self.AVERAGE: metric_vals = metric_vals.sum(axis=0)
-            elif plot_strategy == self.LOWEST: metric_vals = metric_vals.min(axis=0)
-            elif plot_strategy == self.HIGHEST: metric_vals = metric_vals.max(axis=0)
-            else:
-                raise   # TODO
+        if uav_index is None and metric in UAVStats.MULTIVALUE_METRICS:
+            metric_vals = [self.aaa(degradations, metric, i, plot_strategy, metric_subindex) for i in range(fleet_length)]
+            #raise NotImplementedError("plotting values for all UAVs on the same graph not implemented yet for multivalue metrics, please specify a uav index")
+        # metric_vals = UAVStats.get_metric(degradations, metric, uav_index)
+        # if metric in UAVStats.MULTIVALUE_METRICS:
+        #     if plot_strategy == self.INDIVIDUAL: metric_vals = metric_vals[metric_subindex]
+        #     elif plot_strategy == self.AVERAGE: metric_vals = metric_vals.sum(axis=0)
+        #     elif plot_strategy == self.LOWEST: metric_vals = metric_vals.min(axis=0)
+        #     elif plot_strategy == self.HIGHEST: metric_vals = metric_vals.max(axis=0)
+        #     else:
+        #         raise   # TODO
+        else:
+            metric_vals = self.aaa(degradations, metric, uav_index, plot_strategy, metric_subindex)
             
         step_count = len(self._degradations)
         x = np.arange(step_count)
-        plt.xlabel("Time (in minutes I think)")
+        plt.xlabel("Time in min (steps)")# (in minutes I think)")
         name = UAVStats.get_metric_name(metric)
         if metric in UAVStats.MULTIVALUE_METRICS:
             if plot_strategy == self.INDIVIDUAL: name %= f" {metric_subindex+1}"
