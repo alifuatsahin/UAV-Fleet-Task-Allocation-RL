@@ -13,6 +13,7 @@ class UAVGymEnv(gym.Env):
         self.Fleet = Fleet(uav_number)
         self._health_state_dim = self.Fleet.getStats().shape[0]
         self.seed(seed)
+        self.distance = self.MissionGenerator.generate()
         self._setupActionSpace()
         self._setupObservationSpace()
 
@@ -34,8 +35,7 @@ class UAVGymEnv(gym.Env):
         self.observation_space = spaces.Box(self._obs_low, self._obs_high, dtype=np.float32)
 
     def _getObservation(self) -> np.ndarray:
-        distance = self.MissionGenerator.current()
-        state = np.append(self.Fleet.getStats(), distance)
+        state = np.append(self.Fleet.getStats(), self.distance)
         return state
 
     def _reward(self, done: float) -> float:
@@ -51,8 +51,8 @@ class UAVGymEnv(gym.Env):
         return self._getObservation(), info
 
     def step(self, action: np.ndarray) -> tuple:
-        terminate = self.Fleet.executeMission(distance, action)
-        distance = self.MissionGenerator.generate()
+        terminate = self.Fleet.executeMission(self.distance, action)
+        self.distance = self.MissionGenerator.generate()
         reward = self._reward(terminate)
         truncate = False
         return np.array(self._getObservation()), reward, terminate, truncate, {}
