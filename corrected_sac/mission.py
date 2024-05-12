@@ -11,8 +11,8 @@ class MissionGenerator:
         self.generate()
     
     def generate(self):
-        # distance = self.np_random.integers(0, self._max_distance)
-        distance = self._max_distance
+        distance = self.np_random.integers(0, self._max_distance)
+        # distance = self._max_distance
         self._history.append(distance)
         return distance
 

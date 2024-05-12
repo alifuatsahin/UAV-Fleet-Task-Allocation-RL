@@ -12,7 +12,7 @@ from UAV_gym_env import UAVGymEnv
 # env = gym.make("HalfCheetah-v4")
 # env.action_space.seed(1234)
 
-env = UAVGymEnv(uav_number=50, max_distance=500)
+env = UAVGymEnv(uav_number=50, max_distance=100)
 env.seed(1234)
 
 th.manual_seed(1234)
@@ -39,6 +39,7 @@ policy_loss_arr = []
 alpha_loss_arr = []
 alpha_tlogs_arr = []
 rewards = []
+moving_average = 5
 
 # Training Loop
 total_timesteps = 0
@@ -84,6 +85,7 @@ try:
         print("Total Timesteps: {} Episode Num: {} Episode Timesteps: {} Reward: {}".format(total_timesteps, i, episode_timesteps, episode_reward))
 
 except KeyboardInterrupt:
+    rewards = np.convolve(rewards, np.ones(moving_average)/moving_average, 'valid')
     data = {
         'score': rewards,
         'episode number': range(len(rewards))
