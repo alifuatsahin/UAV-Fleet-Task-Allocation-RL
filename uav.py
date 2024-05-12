@@ -1,6 +1,5 @@
 import numpy as np
 import random
-import math
 
 pusher_bearing_factor = [1]
 pusher_coil_factor = [1]
@@ -156,7 +155,7 @@ class UAV:
                 self.pusher_coil_factor *= 1.001
             else:
                 pusher_coil_deg_rate = self.pusher_coil_factor*round(random.uniform(1, 3) * 0.000005, 6)
-                self.pusher_coil_factor *= 1.002
+                self.pusher_coil_factor *= 1.004
 
             self.pusher_coil_health -= pusher_coil_deg_rate
 

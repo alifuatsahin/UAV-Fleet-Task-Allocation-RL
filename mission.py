@@ -2,17 +2,17 @@ from uav import UAV
 import math
 import numpy as np
 import random
-import time
 
 class MissionGenerator:
-    def __init__(self, max_distance, initial_count=1):
+    def __init__(self, max_distance, np_random=None):
         self._max_distance = max_distance
         self._history = []
-        for _ in range(initial_count):
-            self.generate()
+        self.np_random = np_random
+        self.generate()
     
     def generate(self):
-        distance = random.randint(0, self._max_distance)
+        distance = self.np_random.integers(0, self._max_distance)
+        # distance = self._max_distance
         self._history.append(distance)
         return distance
 
