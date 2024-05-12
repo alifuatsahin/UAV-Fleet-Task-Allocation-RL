@@ -2,7 +2,7 @@ import torch as T
 import torch.nn.functional as F
 
 from buffer import ReplayBuffer
-from networks import ActorNetwork, CriticNetwork
+from networks import DirichletPolicy, CriticNetwork, GaussianPolicy
 from utils import soft_update, hard_update
 
 class Agent():
@@ -34,7 +34,7 @@ class Agent():
         else:
             self.alpha = 0
 
-        self.actor = ActorNetwork(self.lr, input_dims, n_actions, layer1_size, layer2_size, name='actor').to(self.device)
+        self.actor = GaussianPolicy(self.lr, input_dims, n_actions, env.action_space, layer1_size, layer2_size, name='actor').to(self.device)
 
         self.critic = CriticNetwork(self.lr, input_dims, n_actions, layer1_size, layer2_size, name='critic_1').to(self.device)
 
@@ -44,8 +44,8 @@ class Agent():
 
     def choose_action(self, observation):
         state = T.tensor(observation, dtype=T.float).to(self.device)
-        actions, _ = self.actor.sample_dirichlet(state)
-        return actions.cpu().detach().numpy()[0]
+        actions, _ , _= self.actor.sample(state)
+        return actions.cpu().detach().numpy()
     
     def remember(self, state, action, reward, new_state, done):
         self.memory.store(state, action, reward, new_state, done)
@@ -63,7 +63,7 @@ class Agent():
         action = T.tensor(action, dtype=T.float).to(self.device)
 
         with T.no_grad():
-            actions, log_probs = self.actor.sample_dirichlet(state)
+            actions, log_probs, _ = self.actor.sample(state)
             q1_new, q2_new = self.critic_target.forward(new_state, actions)
             q_new = T.min(q1_new, q2_new) - self.alpha * log_probs
             next_q = reward + done * self.gamma * q_new
@@ -77,7 +77,7 @@ class Agent():
         critic_loss.backward()
         self.critic.optimizer.step()
 
-        actions, log_probs = self.actor.sample_dirichlet(state)
+        actions, log_probs, _ = self.actor.sample(state)
 
         q1, q2 = self.critic.forward(state, actions)
         q = T.min(q1, q2)

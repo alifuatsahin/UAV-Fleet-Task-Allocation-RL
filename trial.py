@@ -2,10 +2,9 @@ import gym
 import numpy as np
 from agent import Agent
 from gym import wrappers
-# from SAC import SAC
 
 if __name__ == '__main__':
-    env = gym.make('Humanoid-v4')
+    env = gym.make('MountainCarContinuous-v0')
     agent = Agent(input_dims = env.observation_space.shape, env=env,
             n_actions=env.action_space.shape[0])
     n_games = 250
@@ -23,10 +22,10 @@ if __name__ == '__main__':
             observation_, reward, done, _ , info = env.step(action)
             score += reward
             agent.remember(observation, action, reward, observation_, done)
-            agent.learn()
+            agent.update()
             observation = observation_
             max_iter += 1
-            print(max_iter)
+            print(score)
         score_history.append(score)
         avg_score = np.mean(score_history[-100:])
 
