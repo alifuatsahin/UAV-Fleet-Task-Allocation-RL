@@ -51,8 +51,8 @@ class UAVGymEnv(gym.Env):
         return self._getObservation(), info
 
     def step(self, action: np.ndarray) -> tuple:
-        distance = self.MissionGenerator.generate()
         terminate = self.Fleet.executeMission(distance, action)
+        distance = self.MissionGenerator.generate()
         reward = self._reward(terminate)
         truncate = False
         return np.array(self._getObservation()), reward, terminate, truncate, {}

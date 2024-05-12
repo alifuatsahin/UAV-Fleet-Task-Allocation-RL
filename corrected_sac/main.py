@@ -9,25 +9,25 @@ from agent import Agent
 from buffer import ReplayBuffer
 from UAV_gym_env import UAVGymEnv
 
-env = gym.make("HalfCheetah-v4")
-env.action_space.seed(1234)
+# env = gym.make("HalfCheetah-v4")
+# env.action_space.seed(1234)
 
-# env = UAVGymEnv(uav_number=3)
-# env.seed(1234)
+env = UAVGymEnv(uav_number=50, max_distance=500)
+env.seed(1234)
 
 th.manual_seed(1234)
 
 # Agent
 agent = Agent(env=env, 
             hidden_dim=256,
-            batch_size=256,
+            batch_size=512,
             alpha=0.2,
             gamma=0.99,
             tau=0.005,
             lr=0.0003,
             update_interval=1,
             auto_entropy=True,
-            policy="Gaussian")
+            policy="Dirichlet")
 
 # Memory
 memory = ReplayBuffer(capacity=1000000, seed=1234)
@@ -43,7 +43,7 @@ rewards = []
 # Training Loop
 total_timesteps = 0
 updates = 0
-start_steps = 10000
+start_steps = 5000
 # max_episode_steps = 10000
 
 try:
