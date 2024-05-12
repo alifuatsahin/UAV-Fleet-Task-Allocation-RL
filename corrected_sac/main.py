@@ -20,7 +20,7 @@ th.manual_seed(1234)
 # Agent
 agent = Agent(env=env, 
             hidden_dim=256,
-            batch_size=512,
+            batch_size=256,
             alpha=0.2,
             gamma=0.99,
             tau=0.005,
@@ -44,7 +44,7 @@ moving_average = 5
 # Training Loop
 total_timesteps = 0
 updates = 0
-start_steps = 5000
+start_steps = 0
 # max_episode_steps = 10000
 
 try:
@@ -85,18 +85,35 @@ try:
         print("Total Timesteps: {} Episode Num: {} Episode Timesteps: {} Reward: {}".format(total_timesteps, i, episode_timesteps, episode_reward))
 
 except KeyboardInterrupt:
-    rewards = np.convolve(rewards, np.ones(moving_average)/moving_average, 'valid')
     data = {
         'score': rewards,
-        'episode number': range(len(rewards))
+        'episode number': range(len(rewards)),
+    }
+
+    loss = {
+        'qf1_loss': qf1_loss_arr,
+        'qf2_loss': qf2_loss_arr,
+        'policy_loss': policy_loss_arr,
+        'alpha_loss': alpha_loss_arr,
+        'alpha_tlogs': alpha_tlogs_arr
     }
 
     df = pd.DataFrame(data)
     df.to_csv('data.csv', index=False)
 
     fig, ax = plt.subplots()
+    rewards = np.convolve(rewards, np.ones(moving_average)/moving_average, 'valid')
     ax.plot(range(len(rewards)), rewards)
-    ax.set(xlabel='Episode', ylabel='Rewards',
-        title='Rewards vs Episode')
+    ax.set(xlabel='Episode', ylabel="Score",
+        title="Score vs Iterations")
 
-    fig.savefig("score.png")
+    fig.savefig("Score.png")
+
+    for name, value in loss.items():
+        fig, ax = plt.subplots()
+        value = np.convolve(value, np.ones(moving_average)/moving_average, 'valid')
+        ax.plot(range(len(value)), value)
+        ax.set(xlabel='Iterations', ylabel="{}".format(name),
+            title="{} vs Iterations".format(name))
+
+        fig.savefig("{}.png".format(name))
