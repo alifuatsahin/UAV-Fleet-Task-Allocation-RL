@@ -93,7 +93,6 @@ class Agent:
 
             self.alpha = self.log_alpha.exp()
             alpha_tlogs = self.alpha.clone()
-            alpha_loss_tlogs = alpha_loss.clone()
 
         else:
             alpha_loss = th.tensor(0.).to(self.device)

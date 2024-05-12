@@ -114,13 +114,13 @@ class DirichletPolicy(nn.Module):
 
     def forward(self, state):
         alpha = self.policy(state) + 1
-        alpha = th.clamp(alpha, EPS, 1 - EPS)
+        alpha = th.clamp(alpha, min=EPS, max=1 - EPS)
         return alpha
 
     def sample(self, state):
         alpha = self.forward(state)
         dist = Dirichlet(alpha)
         actions = dist.rsample()
-        log_probs = dist.log_prob(actions).sum()
+        log_probs = dist.log_prob(actions).sum(1, keepdim=True)
 
         return actions, log_probs
