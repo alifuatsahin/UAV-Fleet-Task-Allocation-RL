@@ -1,6 +1,5 @@
 import numpy as np
 import random
-import math
 
 pusher_bearing_factor = [1]
 pusher_coil_factor = [1]

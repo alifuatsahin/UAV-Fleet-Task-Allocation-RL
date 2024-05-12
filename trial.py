@@ -5,11 +5,8 @@ from gym import wrappers
 
 if __name__ == '__main__':
     env = gym.make('MountainCarContinuous-v0')
-    agent = Agent(alpha=0.0003, lr=0.0003, 
-                  input_dims=[env.observation_space.shape[0]], 
-                  tau=0.005, scale=2, env=env, gamma=0.99, 
-                  n_actions=env.action_space.shape[0], max_size=1000000, 
-                  layer1_size=256, layer2_size=256, batch_size=512, auto_entropy=True)
+    agent = Agent(input_dims = env.observation_space.shape, env=env,
+            n_actions=env.action_space.shape[0])
     n_games = 250
 
     best_score = env.reward_range[0]
@@ -28,6 +25,7 @@ if __name__ == '__main__':
             agent.update()
             observation = observation_
             max_iter += 1
+            print(score)
         score_history.append(score)
         avg_score = np.mean(score_history[-100:])
 
