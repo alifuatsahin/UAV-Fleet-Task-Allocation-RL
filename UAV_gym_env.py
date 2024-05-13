@@ -41,7 +41,7 @@ class UAVGymEnv(gym.Env):
     def _reward(self, done: float) -> float:
         reward = 0
         if not done:
-            reward = self.MissionGenerator.current()
+            reward = self.MissionGenerator.current()/100
         # reward -= np.linalg.norm(self._last_health-self.Fleet.getStats()[:-1])
         return reward
 

@@ -12,19 +12,19 @@ from UAV_gym_env import UAVGymEnv
 # env = gym.make("HalfCheetah-v4")
 # env.action_space.seed(1234)
 
-env = UAVGymEnv(uav_number=50, max_distance=100)
+env = UAVGymEnv(uav_number=20, max_distance=100)
 env.seed(1234)
 
 th.manual_seed(1234)
 
 # Agent
 agent = Agent(env=env, 
-            hidden_dim=256,
-            batch_size=128,
+            hidden_dim=64,
+            batch_size=256,
             alpha=0.2,
             gamma=0.99,
             tau=0.005,
-            lr=0.0003,
+            lr=0.0001,
             update_interval=1,
             auto_entropy=True,
             policy="Dirichlet")
@@ -39,7 +39,7 @@ policy_loss_arr = []
 alpha_loss_arr = []
 alpha_tlogs_arr = []
 rewards = []
-moving_average = 5
+moving_average = 10
 
 # Training Loop
 total_timesteps = 0
@@ -80,7 +80,9 @@ try:
 
             state = next_state
             # print("Total Timesteps: {} Episode Timesteps: {} Reward: {}".format(total_timesteps, episode_timesteps, episode_reward))
-        rewards.append(episode_reward)
+
+        if total_timesteps > start_steps:
+            rewards.append(episode_reward)
 
         print("Total Timesteps: {} Episode Num: {} Episode Timesteps: {} Reward: {}".format(total_timesteps, i, episode_timesteps, episode_reward))
 
@@ -99,7 +101,7 @@ except KeyboardInterrupt:
     }
 
     df = pd.DataFrame(data)
-    df.to_csv('data.csv', index=False)
+    df.to_csv('./plots/data.csv', index=False)
 
     fig, ax = plt.subplots()
     rewards = np.convolve(rewards, np.ones(moving_average)/moving_average, 'valid')
