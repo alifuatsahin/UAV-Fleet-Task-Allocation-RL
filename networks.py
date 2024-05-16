@@ -13,26 +13,45 @@ def weights_init_(m):
         nn.init.constant_(m.bias, 0)
 
 class CriticNetwork(nn.Module):
-    def __init__(self, state_dim, action_dim, hidden_dim):
+    def __init__(self, state_dim, action_dim, hidden_dims = [256, 256]):
         super(CriticNetwork, self).__init__()
 
-        # Q1 architecture
         self.Q1 = nn.Sequential(
-            nn.Linear(state_dim + action_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, 1)
+            nn.Linear(state_dim + action_dim, hidden_dims[0]),
+            nn.ReLU()
+        )
+        self.Q2 = nn.Sequential(
+            nn.Linear(state_dim + action_dim, hidden_dims[0]),
+            nn.ReLU()
         )
 
-        # Q2 architecture
-        self.Q2 = nn.Sequential(
-            nn.Linear(state_dim + action_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, 1)
-        )
+        if len(hidden_dims) > 1:
+            for i in range(len(hidden_dims)-1):
+                self.Q1.add_module('linear_{}'.format(i), nn.Linear(hidden_dims[i], hidden_dims[i+1]))
+                self.Q1.add_module('relu', nn.ReLU())
+                self.Q2.add_module('linear_{}'.format(i), nn.Linear(hidden_dims[i], hidden_dims[i+1]))
+                self.Q2.add_module('relu', nn.ReLU())
+
+        self.Q1.add_module('output', nn.Linear(hidden_dims[-1], 1))
+        self.Q2.add_module('output', nn.Linear(hidden_dims[-1], 1))
+
+        # # Q1 architecture
+        # self.Q1 = nn.Sequential(
+        #     nn.Linear(state_dim + action_dim, hidden_dim),
+        #     nn.ReLU(),
+        #     nn.Linear(hidden_dim, hidden_dim),
+        #     nn.ReLU(),
+        #     nn.Linear(hidden_dim, 1)
+        # )
+
+        # # Q2 architecture
+        # self.Q2 = nn.Sequential(
+        #     nn.Linear(state_dim + action_dim, hidden_dim),
+        #     nn.ReLU(),
+        #     nn.Linear(hidden_dim, hidden_dim),
+        #     nn.ReLU(),
+        #     nn.Linear(hidden_dim, 1)
+        # )
 
         self.apply(weights_init_)
 
@@ -45,19 +64,29 @@ class CriticNetwork(nn.Module):
         return q1, q2
     
 class GaussianPolicy(nn.Module):
-    def __init__(self, state_dim, hidden_dim, action_space=None):
+    def __init__(self, state_dim, hidden_dims, action_space=None):
         super(GaussianPolicy, self).__init__()
 
-        # policy architecture
-        self.layers = nn.Sequential(
-            nn.Linear(state_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim),
+        self.model = nn.Sequential(
+            nn.Linear(state_dim, hidden_dims[0]),
             nn.ReLU()
         )
 
-        self.mean = nn.Linear(hidden_dim, action_space.shape[0])
-        self.log_std = nn.Linear(hidden_dim, action_space.shape[0])
+        if len(hidden_dims) > 1:
+            for i in range(len(hidden_dims)-1):
+                self.model.add_module('linear_{}'.format(i), nn.Linear(hidden_dims[i], hidden_dims[i+1]))
+                self.model.add_module('relu', nn.ReLU())
+
+        # # policy architecture
+        # self.layers = nn.Sequential(
+        #     nn.Linear(state_dim, hidden_dim),
+        #     nn.ReLU(),
+        #     nn.Linear(hidden_dim, hidden_dim),
+        #     nn.ReLU()
+        # )
+
+        self.mean = nn.Linear(hidden_dims[-1], action_space.shape[0])
+        self.log_std = nn.Linear(hidden_dims[-1], action_space.shape[0])
 
         self.apply(weights_init_)
 
@@ -71,7 +100,7 @@ class GaussianPolicy(nn.Module):
                 (action_space.high + action_space.low) / 2.)
             
     def forward(self, state):
-        x = self.layers(state)
+        x = self.model(state)
         mean = self.mean(x)
         log_std = self.log_std(x)
         log_std = th.clamp(log_std, min=LOG_SIG_MIN, max=LOG_SIG_MAX)
@@ -97,30 +126,42 @@ class GaussianPolicy(nn.Module):
         return super(GaussianPolicy, self).to(device)
     
 class DirichletPolicy(nn.Module):
-    def __init__(self, state_dim, action_dim, hidden_dim):
+    def __init__(self, state_dim, action_dim, hidden_dims):
         super(DirichletPolicy, self).__init__()
 
-        # policy architecture
         self.policy = nn.Sequential(
-            nn.Linear(state_dim, hidden_dim),
-            nn.LeakyReLU(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.Tanh(),
-            nn.Linear(hidden_dim, action_dim),
-            nn.Softplus()
+            nn.Linear(state_dim, hidden_dims[0]),
+            nn.LeakyReLU()
         )
+
+        if len(hidden_dims) > 1:
+            for i in range(len(hidden_dims)-1):
+                self.policy.add_module('linear_{}'.format(i), nn.Linear(hidden_dims[i], hidden_dims[i+1]))
+                self.policy.add_module('relu', nn.LeakyReLU())
+
+        self.policy.add_module('output', nn.Linear(hidden_dims[-1], action_dim))
+        self.policy.add_module('softplus', nn.Softplus())
+
+        # # policy architecture
+        # self.policy = nn.Sequential(
+        #     nn.Linear(state_dim, hidden_dim),
+        #     nn.LeakyReLU(),
+        #     nn.Linear(hidden_dim, hidden_dim),
+        #     nn.Tanh(),
+        #     nn.Linear(hidden_dim, action_dim),
+        #     nn.Softplus()
+        # )
 
         self.apply(weights_init_)
 
     def forward(self, state):
-        alpha = self.policy(state) + 1 + EPS
-        # alpha = th.clamp(alpha, min=EPS, max=1 - EPS)
+        alpha = self.policy(state) + 1
         return alpha
 
     def sample(self, state):
         alpha = self.forward(state)
         dist = Dirichlet(alpha)
         actions = dist.rsample()
-        log_probs = dist.log_prob(actions).sum()
+        log_probs = dist.log_prob(actions).unsqueeze(0)
 
         return actions, log_probs

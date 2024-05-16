@@ -12,14 +12,14 @@ from UAV_gym_env import UAVGymEnv
 # env = gym.make("HalfCheetah-v4")
 # env.action_space.seed(1234)
 
-env = UAVGymEnv(uav_number=20, max_distance=100)
+env = UAVGymEnv(uav_number=20, max_distance=50)
 env.seed(1234)
 
 th.manual_seed(1234)
 
 # Agent
 agent = Agent(env=env, 
-            hidden_dim=64,
+            hidden_dim=[256, 256],
             batch_size=256,
             alpha=0.2,
             gamma=0.99,
@@ -57,6 +57,7 @@ try:
         while not done:
             if total_timesteps < start_steps:
                 action = env.action_space.sample()
+                action = action/np.sum(action)
             else:
                 action = agent.get_action(state)
 
