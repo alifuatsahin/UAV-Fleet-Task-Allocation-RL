@@ -4,6 +4,9 @@ import torch as th
 import itertools
 import pandas as pd
 import matplotlib.pyplot as plt
+from uav import UAVStats
+from stats import Statistics
+
 
 from agent import Agent
 from buffer import ReplayBuffer
@@ -82,6 +85,12 @@ try:
             state = next_state
             # print("Total Timesteps: {} Episode Timesteps: {} Reward: {}".format(total_timesteps, episode_timesteps, episode_reward))
 
+        # example plotting
+        #env.plot_one_metric(UAVStats.PUSHER_BEARING_HEALTH, uav_index=None)
+        #env.plot_one_metric(UAVStats.HOVER_BEARING_HEALTH, uav_index=None, plot_strategy=Statistics.LOWEST)
+        env.plot_all_metrics(0)
+        plt.show()
+            
         if total_timesteps > start_steps:
             rewards.append(episode_reward)
 

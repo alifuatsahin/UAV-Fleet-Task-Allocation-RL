@@ -1,5 +1,9 @@
+from __future__ import annotations
 import numpy as np
 import random
+import math
+from typing import List
+
 
 pusher_bearing_factor = [1]
 pusher_coil_factor = [1]
@@ -197,9 +201,69 @@ class UAV:
         return self.failure_detection
 
     def getStats(self) -> np.ndarray:
+        return UAVStats(self).get()
+
+
+class UAVStats:
+    """
+    Class for gathering stats encoding and decoding, to make it easier if we want to change those mechanics later 
+    (for instance by adding back battery levels to the stats, which they are currently not).
+    """
+    
+    HOVER_BEARING_HEALTH = 0
+    HOVER_COIL_HEALTH = 1
+    PUSHER_BEARING_HEALTH = 2
+    PUSHER_COIL_HEALTH = 3
+    BATTERY_LEVEL = 4
+    
+    METRICS = [HOVER_BEARING_HEALTH, HOVER_COIL_HEALTH, PUSHER_BEARING_HEALTH, PUSHER_COIL_HEALTH]  #, BATTERY_LEVEL]
+    MULTIVALUE_METRICS = [HOVER_BEARING_HEALTH, HOVER_COIL_HEALTH]
+    
+    STAT_NAMES = {
+        HOVER_BEARING_HEALTH: "hover bearing%s health",
+        HOVER_COIL_HEALTH: "hover coil%s health",
+        PUSHER_BEARING_HEALTH: "pusher bearing health",
+        PUSHER_COIL_HEALTH: "pusher coil health",
+        BATTERY_LEVEL: "battery level"
+    }
+    
+    def __init__(self, uav: UAV):
+        self._uav = uav
+    
+    def get(self):
+        """get stats encoded as a numpy array"""
         return np.concatenate((
-            self.hover_bearing_health,
-            self.hover_coil_health,
-            np.array([self.pusher_bearing_health]),
-            np.array([self.pusher_coil_health]))
-        )
+            self._uav.hover_bearing_health,
+            self._uav.hover_coil_health,
+            np.array([self._uav.pusher_bearing_health]),
+            np.array([self._uav.pusher_coil_health]),
+            #np.array([self._uav.battery_level])
+        ))
+    
+    @staticmethod
+    def get_metric(stats: np.ndarray, metric: int, uav_index: int = None) -> np.ndarray:
+        """
+        Get a metric of the stats that have been encoded to numpy array.
+        args
+        ----
+        stats:
+            a numpy array of shape (<nb metrics>*<nb uavs>) x <nb of steps recorded>
+        metric:
+            The metric to isolate among UAVStats.METRICS
+
+        returns the value of this metric for the given uav_index across all the steps
+        """
+        attr_lengths = [4, 4, 1, 1]     # [4, 4, 1, 1, 1] with battery level
+        total_length = sum(attr_lengths)
+        if uav_index is None:   # TODO: for now only works for attributes of length 1
+            start = sum(attr_lengths[:metric])
+            return stats[start::total_length]
+        start = total_length*uav_index + sum(attr_lengths[:metric])
+        length = attr_lengths[metric]
+        return stats[start] if length == 1 else stats[start: start+length]
+
+    
+    @classmethod
+    def get_metric_name(cls, metric: int):
+        name = cls.STAT_NAMES[metric]
+        return name
