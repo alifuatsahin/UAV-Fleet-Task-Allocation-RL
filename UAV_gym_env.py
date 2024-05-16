@@ -63,7 +63,7 @@ class UAVGymEnv(gym.Env):
         truncate = False
         return np.array(self._getObservation()), reward, terminate, truncate, {}
 
-    def plot_one_metric(self, metric: int, uav_index: int = None, plot_strategy: int = None, metric_subindex: int = None):
+    def plot_one_metric(self, metric: int, uav_index: int = None, plot_strategy: int = None, metric_subindex: int = None, show_legend: bool = False):
         """
         Plot a certain metric for one or all UAVs
         Example usages:
@@ -79,7 +79,7 @@ class UAVGymEnv(gym.Env):
             
         For more details, see Statistics.plot_one_metric.
         """
-        self._statistics.plot_one_metric(metric, uav_index, plot_strategy, metric_subindex)
+        self._statistics.plot_one_metric(metric, uav_index, plot_strategy, metric_subindex, show_legend=show_legend)
 
     def plot_all_metrics(self, uav_index: int, plot_strategy: int = None, metric_subindex: int = None):
         """
@@ -88,5 +88,5 @@ class UAVGymEnv(gym.Env):
         """
         self._statistics.plot_all_metrics(uav_index, plot_strategy, metric_subindex)
 
-    def plot_flown_distances(self):
-        self._statistics.plot_flown_distances()
+    def plot_flown_distances(self, show_legend: bool = False):
+        self._statistics.plot_flown_distances(show_legend=show_legend)

@@ -52,7 +52,7 @@ class Statistics:
             elif plot_strategy == self.HIGHEST: label %= "s highest"
         return label
 
-    def plot_one_metric(self, metric: int, uav_index: int = None, plot_strategy: int = None, metric_subindex: int = None):
+    def plot_one_metric(self, metric: int, uav_index: int = None, plot_strategy: int = None, metric_subindex: int = None, show_legend: bool = False):
         # TODO: implement plot strategies also between UAVs not only between subindices of a multivalue metric
         # TODO: maybe split this function into multiple functions with more specific usages for more simplicity of API
         """
@@ -86,7 +86,7 @@ class Statistics:
             for i, m in enumerate(metric_vals):
                 plt.plot(x, m, label=f"uav {i+1}")
             plt.ylabel(name)
-            plt.legend()
+            if show_legend: plt.legend()
         else:
             plt.plot(x, metric_vals)
             plt.ylabel(f"UAV {uav_index+1} {name}")
@@ -108,7 +108,7 @@ class Statistics:
         plt.xlabel("Number of missions")
         plt.legend()
 
-    def plot_flown_distances(self):
+    def plot_flown_distances(self, show_legend: bool = False):
         flown_distances = np.array(self._flown_distances)
         step_count = len(self._degradations)
         x = np.arange(step_count)

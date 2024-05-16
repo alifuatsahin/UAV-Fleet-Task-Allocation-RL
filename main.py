@@ -91,11 +91,11 @@ try:
         i = env.Fleet.getMostUsedUAV()
         env.plot_all_metrics(i)
         plt.figure()
-        env.plot_flown_distances()
+        env.plot_flown_distances(show_legend=False)
         plt.figure()
-        env.plot_one_metric(UAVStats.HOVER_BEARING_HEALTH, uav_index=None, plot_strategy=Statistics.LOWEST)
+        env.plot_one_metric(UAVStats.HOVER_BEARING_HEALTH, uav_index=None, plot_strategy=Statistics.LOWEST, show_legend=False)
         plt.show()
-            
+
         if total_timesteps > start_steps:
             rewards.append(episode_reward)
 
