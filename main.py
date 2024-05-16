@@ -15,7 +15,7 @@ from UAV_gym_env import UAVGymEnv
 # env = gym.make("HalfCheetah-v4")
 # env.action_space.seed(1234)
 
-env = UAVGymEnv(uav_number=20, max_distance=50)
+env = UAVGymEnv(uav_number=4, max_distance=100)
 env.seed(1234)
 
 th.manual_seed(1234)
@@ -24,12 +24,12 @@ th.manual_seed(1234)
 agent = Agent(env=env, 
             hidden_dim=[256, 256],
             batch_size=256,
-            alpha=0.2,
+            alpha=0.01,
             gamma=0.99,
             tau=0.005,
             lr=0.0001,
             update_interval=1,
-            auto_entropy=True,
+            auto_entropy=False,
             policy="Dirichlet")
 
 # Memory
@@ -88,13 +88,6 @@ try:
         # example plotting
         #env.plot_one_metric(UAVStats.PUSHER_BEARING_HEALTH, uav_index=None)
         #env.plot_one_metric(UAVStats.HOVER_BEARING_HEALTH, uav_index=None, plot_strategy=Statistics.LOWEST)
-        i = env.Fleet.getMostUsedUAV()
-        env.plot_all_metrics(i)
-        plt.figure()
-        env.plot_flown_distances(show_legend=False)
-        plt.figure()
-        env.plot_one_metric(UAVStats.HOVER_BEARING_HEALTH, uav_index=None, plot_strategy=Statistics.LOWEST, show_legend=False)
-        plt.show()
 
         if total_timesteps > start_steps:
             rewards.append(episode_reward)
@@ -102,6 +95,14 @@ try:
         print("Total Timesteps: {} Episode Num: {} Episode Timesteps: {} Reward: {}".format(total_timesteps, i, episode_timesteps, episode_reward))
 
 except KeyboardInterrupt:
+    j = env.Fleet.getMostUsedUAV()
+    env.plot_all_metrics(j)
+    plt.figure()
+    env.plot_flown_distances(show_legend=False)
+    plt.figure()
+    env.plot_one_metric(UAVStats.HOVER_BEARING_HEALTH, uav_index=None, plot_strategy=Statistics.LOWEST, show_legend=False)
+    plt.show()
+    
     data = {
         'score': rewards,
         'episode number': range(len(rewards)),

@@ -93,7 +93,7 @@ class Agent:
 
         else:
             alpha_loss = th.tensor(0.).to(self.device)
-            alpha_tlogs = self.alpha
+            alpha_tlogs = th.tensor(self.alpha).to(self.device)
 
         if updates % self.update_interval == 0:
             soft_update(self.critic_target, self.critic, self.tau)
