@@ -1,7 +1,6 @@
 from uav import UAV
 from mission import Mission
 import numpy as np
-import threading
 
 class Fleet:
     def __init__(self, size: int):
@@ -19,22 +18,17 @@ class Fleet:
     def hasFailed(self) -> bool:
         return any(uav.hasFailed() for uav in self._uavs)
     
-    def executeMission(self, total_distance: float, action: np.ndarray) -> bool:
-        """return True for succes, False for failure"""
-        search_distances = action * total_distance
+    def executeMission(self, hover_distance: float, cruise_distance: float, action: np.ndarray) -> bool:
+        hover_uavs = action * hover_distance
+        cruise_uavs = action * cruise_distance
 
+        dones = []
         # start individual missions
-        for distance, uav in zip(search_distances, self._uavs):
-            mission = Mission(uav, distance)
-            thread = threading.Thread(target=mission.execute)
-            thread.start()
+        for hover, cruise, uav in zip(hover_uavs, cruise_uavs, self._uavs):
+            mission = Mission(uav, hover, cruise)
+            dones.append(mission.execute())
         
-        # wait for execution
-        # rate = Rate(hz=20)
-        while True:
-            if not any(uav.inMission() for uav in self._uavs):
-                return self.hasFailed()
-            # rate.sleep()    # release ressources for other threads
+        return any(dones)
     
     def getStats(self) -> np.ndarray:
         return np.concatenate([uav.getStats() for uav in self._uavs])
