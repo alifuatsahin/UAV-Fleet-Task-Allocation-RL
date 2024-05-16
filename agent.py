@@ -1,122 +1,102 @@
-import torch as T
+import torch as th
 import torch.nn.functional as F
-
-from buffer import ReplayBuffer
-from networks import DirichletPolicy, CriticNetwork, GaussianPolicy
+import torch.optim as optim
+from networks import CriticNetwork, GaussianPolicy, DirichletPolicy
 from utils import soft_update, hard_update
 
-class Agent():
-    def __init__(self, alpha=0.0003, lr=0.0003, 
-                 input_dims=[8], tau=0.005, 
-                 scale=2, env=None, 
-                 gamma=0.99, n_actions=2, 
-                 max_size=1000000, layer1_size=256, 
-                 layer2_size=256, batch_size=256,
-                 auto_entropy=True
-                 ):
+class Agent:
+    def __init__(self, env,
+                hidden_dim,
+                batch_size,
+                alpha, gamma, tau, lr,
+                update_interval,
+                auto_entropy = True, 
+                policy = "Gaussian"): # "Gaussian" or "Dirichlet"
         self.gamma = gamma
         self.alpha = alpha
         self.tau = tau
-        self.scale = scale
-        self.lr = lr
-        self.auto_entropy = auto_entropy
-        self.memory = ReplayBuffer(max_size, input_dims, n_actions)
         self.batch_size = batch_size
-        self.max_action = env.action_space.high[0]
-        self.min_action = env.action_space.low[0]
+        self.auto_entropy = auto_entropy
+        self.update_interval = update_interval
 
-        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
+        self.device = th.device("cuda" if th.cuda.is_available() else "cpu")
+        self.policy_type = policy
 
-        if self.auto_entropy:
-            self.target_entropy = -T.prod(T.tensor(n_actions).to(self.device)).item()
-            self.log_alpha = T.zeros(1, requires_grad=True, device=self.device)
-            self.alpha_optimizer = T.optim.Adam([self.log_alpha], lr=lr)
-        else:
-            self.alpha = 0
+        self.critic = CriticNetwork(env.observation_space.shape[0], env.action_space.shape[0], hidden_dim).to(self.device)
+        self.critic_optim = optim.Adam(self.critic.parameters(), lr=lr)
 
-        self.actor = GaussianPolicy(self.lr, input_dims, n_actions, env.action_space, layer1_size, layer2_size, name='actor').to(self.device)
-
-        self.critic = CriticNetwork(self.lr, input_dims, n_actions, layer1_size, layer2_size, name='critic_1').to(self.device)
-
-        self.critic_target = CriticNetwork(self.lr, input_dims, n_actions,layer1_size, layer2_size, name='critic_2').to(self.device)
-
+        self.critic_target = CriticNetwork(env.observation_space.shape[0], env.action_space.shape[0], hidden_dim).to(self.device)
         hard_update(self.critic_target, self.critic)
 
-    def choose_action(self, observation):
-        state = T.tensor(observation, dtype=T.float).to(self.device)
-        actions, _ , _= self.actor.sample(state)
-        return actions.cpu().detach().numpy()
+        if self.policy_type == "Gaussian":
+            self.policy = GaussianPolicy(env.observation_space.shape[0], hidden_dim, env.action_space).to(self.device)
+        else:
+            self.policy = DirichletPolicy(env.observation_space.shape[0], env.action_space.shape[0], hidden_dim).to(self.device)
+
+        if auto_entropy:
+            self.target_entropy = -th.prod(th.Tensor(env.action_space.shape[0]).to(self.device)).item() #-0.1 * np.log(1/env.action_space.shape[0]) 
+            self.log_alpha = th.zeros(1, requires_grad=True, device=self.device)
+            self.alpha_optim = optim.Adam([self.log_alpha], lr=lr, eps=1e-4)
+
+        self.policy_optim = optim.Adam(self.policy.parameters(), lr=lr, eps=1e-4)
+
+    def get_action(self, state):
+        state = th.FloatTensor(state).to(self.device).unsqueeze(0)
+        action, _ = self.policy.sample(state)
+
+        return action.detach().cpu().numpy()[0]
     
-    def remember(self, state, action, reward, new_state, done):
-        self.memory.store(state, action, reward, new_state, done)
+    def update_parameters(self, memory, batch_size, updates):
+        state_batch, action_batch, reward_batch, next_state_batch, mask_batch = memory.sample(batch_size)
 
-    def update(self):
-        if self.memory.m_count < self.batch_size:
-            return
-        
-        state, new_state, action, reward, done = self.memory.sample(self.batch_size)
+        state_batch = th.FloatTensor(state_batch).to(self.device)
+        action_batch = th.FloatTensor(action_batch).to(self.device)
+        reward_batch = th.FloatTensor(reward_batch).to(self.device).unsqueeze(1)
+        next_state_batch = th.FloatTensor(next_state_batch).to(self.device)
+        mask_batch = th.FloatTensor(mask_batch).to(self.device).unsqueeze(1)
 
-        reward = T.tensor(reward, dtype=T.float).to(self.device).unsqueeze(1)
-        done = T.tensor(done).to(self.device).unsqueeze(1)
-        new_state = T.tensor(new_state, dtype=T.float).to(self.device)
-        state = T.tensor(state, dtype=T.float).to(self.device)
-        action = T.tensor(action, dtype=T.float).to(self.device)
+        with th.no_grad():
+            next_action, next_log_pi = self.policy.sample(next_state_batch)
+            qf1_next_target, qf2_next_target = self.critic_target(next_state_batch, next_action)
+            min_qf_next_target = th.min(qf1_next_target, qf2_next_target) - self.alpha * next_log_pi
+            next_q_value = reward_batch + self.gamma * (1-mask_batch) * min_qf_next_target
 
-        with T.no_grad():
-            actions, log_probs, _ = self.actor.sample(state)
-            q1_new, q2_new = self.critic_target.forward(new_state, actions)
-            q_new = T.min(q1_new, q2_new) - self.alpha * log_probs
-            next_q = reward + done * self.gamma * q_new
+        qf1, qf2 = self.critic(state_batch, action_batch)
+        qf1_loss = F.mse_loss(qf1, next_q_value)
+        qf2_loss = F.mse_loss(qf2, next_q_value)
+        qf_loss = qf1_loss + qf2_loss
 
-        qf1, qf2 = self.critic.forward(state, action) # Two Q functions to eliminate positive bias
-        qf1_loss = F.mse_loss(qf1, next_q) # JQ = 𝔼(st,at)~D[0.5(Q1(st,at) - r(st,at) - γ(𝔼st+1~p[V(st+1)]))^2]
-        qf2_loss = F.mse_loss(qf2, next_q)
-        critic_loss = qf1_loss + qf2_loss
+        self.critic_optim.zero_grad()
+        qf_loss.backward()
+        self.critic_optim.step()
 
-        self.critic.optimizer.zero_grad()
-        critic_loss.backward()
-        self.critic.optimizer.step()
+        action, log_pi = self.policy.sample(state_batch)
 
-        actions, log_probs, _ = self.actor.sample(state)
+        qf1_pi, qf2_pi = self.critic(state_batch, action)
+        min_qf_pi = th.min(qf1_pi, qf2_pi)
 
-        q1, q2 = self.critic.forward(state, actions)
-        q = T.min(q1, q2)
+        policy_loss = ((self.alpha * log_pi) - min_qf_pi).mean()
 
-        actor_loss = T.mean(self.alpha * log_probs - q)
-
-        self.actor.optimizer.zero_grad()
-        actor_loss.backward()
-        self.actor.optimizer.step()
+        self.policy_optim.zero_grad()
+        policy_loss.backward()
+        self.policy_optim.step()
 
         if self.auto_entropy:
-            alpha_loss = -T.mean(self.log_alpha * (log_probs + self.target_entropy).detach())
+            alpha_loss = -(self.log_alpha * (log_pi + self.target_entropy).detach()).mean()
 
-            self.alpha_optimizer.zero_grad()
+            self.alpha_optim.zero_grad()
             alpha_loss.backward()
-            self.alpha_optimizer.step()
+            self.alpha_optim.step()
 
             self.alpha = self.log_alpha.exp()
             alpha_tlogs = self.alpha.clone()
+
         else:
-            alpha_loss = T.tensor(0.).to(self.device)
-            alpha_tlogs = T.tensor(self.alpha)
+            alpha_loss = th.tensor(0.).to(self.device)
+            alpha_tlogs = self.alpha
 
-        soft_update(self.critic_target, self.critic, self.tau)
+        if updates % self.update_interval == 0:
+            soft_update(self.critic_target, self.critic, self.tau)
 
-        return actor_loss.item(), critic_loss.item(), alpha_loss.item(), alpha_tlogs.item()
+        return qf1_loss.item(), qf2_loss.item(), policy_loss.item(), alpha_loss.item(), alpha_tlogs.item()
 
-    def save_models(self):
-        print('... saving models ...')
-        self.actor.save_checkpoint()
-        self.value.save_checkpoint()
-        self.target_value.save_checkpoint()
-        self.critic1.save_checkpoint()
-        self.critic2.save_checkpoint()
-
-    def load_models(self):
-        print('... loading models ...')
-        self.actor.load_checkpoint()
-        self.value.load_checkpoint()
-        self.target_value.load_checkpoint()
-        self.critic1.load_checkpoint()
-        self.critic2.load_checkpoint()

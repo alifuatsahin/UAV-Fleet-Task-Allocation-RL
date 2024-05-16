@@ -1,35 +1,47 @@
+import random
 import numpy as np
+import os
+import pickle
 
 class ReplayBuffer:
-    def __init__(self, max_size, input_shape, n_actions):
-        self._m_size = max_size
-        self.m_count = 0
-        self._state_m = np.zeros((self._m_size, *input_shape))
-        self._new_state_m = np.zeros((self._m_size, *input_shape))
-        self._action_m = np.zeros((self._m_size, n_actions))
-        self._reward_m = np.zeros((self._m_size))
-        self._terminal_m = np.zeros(self._m_size, dtype=np.bool_)
+    def __init__(self, capacity, seed):
+        random.seed(seed)
+        self.capacity = capacity
+        self.memory = []
+        self.position = 0
 
-    def store(self, state, action, reward, state_, done):
-        id = self.m_count % self._m_size
+    def push(self, state, action, reward, next_state, done):
+        if len(self.memory) < self.capacity:
+            self.memory.append(None)
 
-        self._state_m[id] = state
-        self._new_state_m[id] = state_
-        self._action_m[id] = action
-        self._reward_m[id] = reward
-        self._terminal_m[id] = done
-
-        self.m_count += 1
+        self.memory[self.position] = (state, action, reward, next_state, done)
+        self.position = (self.position + 1) % self.capacity
 
     def sample(self, batch_size):
-        max_m = min(self.m_count, self._m_size)
+        batch = random.sample(self.memory, batch_size)
+        state, action, reward, next_state, done = map(np.stack, zip(*batch))
 
-        batch = np.random.choice(max_m, batch_size)
+        return state, action, reward, next_state, done
+    
+    def __len__(self):
+        return len(self.memory)
+    
+    def save(self, filename, env_name, suffix='', save_dir=None):
+        if not os.path.exists("checkpoints/"):
+            os.makedirs("checkpoints/")
 
-        states = self._state_m[batch]
-        states_ = self._new_state_m[batch]
-        actions = self._action_m[batch]
-        rewards = self._reward_m[batch]
-        dones = self._terminal_m[batch]
+        if save_dir is None:
+            save_dir = "checkpoints/buffer_{}_{}".format(env_name, suffix)
+        print("... saving replay buffer checkpoint ...")
 
-        return states, states_, actions, rewards, dones
+        with open(save_dir, 'wb') as f:
+            pickle.dump(f, self.memory)
+
+    def load(self, load_dir):
+        print("... loading replay buffer checkpoint ...")
+
+        with open(load_dir, 'rb') as f:
+            self.memory = pickle.load(f)
+            self.position  = len(self.memory) % self.capacity
+
+

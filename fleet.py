@@ -2,8 +2,6 @@ from uav import UAV
 from mission import Mission
 import numpy as np
 import threading
-from rate import Rate
-
 
 class Fleet:
     def __init__(self, size: int):
