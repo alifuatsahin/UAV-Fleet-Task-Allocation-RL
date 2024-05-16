@@ -71,51 +71,6 @@ class CriticNetwork(nn.Module):
         print('... loading checkpoint ...')
         self.load_state_dict(T.load(self.checkpoint_file))
 
-class DirichletPolicy(nn.Module):
-    def __init__(self, lr, input_dims, n_actions, fc1_dims=256, fc2_dims=256, name = 'actor', chkpt_dir='tmp/sac'):
-        super(DirichletPolicy, self).__init__()
-        self.input_dims = input_dims
-        self.fc1_dims = fc1_dims
-        self.fc2_dims = fc2_dims
-        self.n_actions = n_actions
-        self.checkpoint_file = os.path.join(chkpt_dir, name+'_sac')
-        self.noise = 1e-16
-
-        self.model = nn.Sequential(
-            nn.Linear(*self.input_dims, self.fc1_dims),
-            nn.LeakyReLU(),
-            nn.Linear(self.fc1_dims, self.fc2_dims),
-            nn.Tanh(),
-            nn.Linear(self.fc2_dims, self.n_actions),
-            nn.Softplus()
-        )
-
-        self.apply(init_weights)
-
-        self.optimizer = optim.Adam(self.parameters(), lr=lr)
-
-    def forward(self, state):
-        alpha = self.model(state)
-
-        return alpha
-    
-    def save_checkpoint(self):
-        print('... saving checkpoint ...')
-        T.save(self.state_dict(), self.checkpoint_file)
-
-    def load_checkpoint(self):
-        print('... loading checkpoint ...')
-        self.load_state_dict(T.load(self.checkpoint_file))
-
-    def sample(self, state):
-        alpha = self.forward(state) + 1 
-        alpha = T.clamp(alpha, self.noise, 1-self.noise)
-        dist = dirichlet.Dirichlet(alpha)
-        actions = dist.rsample()
-        log_probs = dist.log_prob(actions)
-        log_probs = T.sum(log_probs, dim=0)
-
-        return actions, log_probs
     
 class GaussianPolicy(nn.Module):
     def __init__(self, state_dim, hidden_dims, action_space=None):
