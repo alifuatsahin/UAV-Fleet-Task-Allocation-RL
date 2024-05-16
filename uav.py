@@ -80,10 +80,10 @@ class UAV:
 
         if cruise > 0:
             if self.pusher_bearing_health > self.pusher_bearing_failure_appearance:
-                pusher_bearing_deg_rate = self.pusher_bearing_factor*round(random.uniform(1, 3) * 0.00005, 6)
+                pusher_bearing_deg_rate = self.pusher_bearing_factor*round(random.uniform(1, 3) * 0.0001, 6)
                 self.pusher_bearing_factor *= 1.001
             else:
-                pusher_bearing_deg_rate = self.pusher_bearing_factor*round((random.uniform(1, 3) * 0.00005), 6)
+                pusher_bearing_deg_rate = self.pusher_bearing_factor*round(random.uniform(1, 3) * 0.0001, 6)
                 self.pusher_bearing_factor *= 1.006
 
             self.pusher_bearing_health -= cruise*pusher_bearing_deg_rate
