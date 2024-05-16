@@ -15,10 +15,10 @@ class UAV:
     LANDING_TIME = 2  # in minutes
 
     def __init__(self, uav_id: int):
-        self.hbmx_count = 0
-        self.hcmx_count = 0
-        self.pbmx_count = 0
-        self.pcmx_count = 0
+        # self.hbmx_count = 0
+        # self.hcmx_count = 0
+        # self.pbmx_count = 0
+        # self.pcmx_count = 0
         self.uav_id = uav_id
         self.flight_mode = None
         self.hover_bearing_health = np.zeros(4)
@@ -38,17 +38,18 @@ class UAV:
         self.number_of_missions = 0
         self.mission_mode = 0  # --> 0: on delivery mission, 1: on SAR mission, 2: available, 3: R2H, 4: in maintenance
         self.mission_id = 0
-        self.mission_progress = None
+        # self.mission_progress = None
         self.rem_mission_len = 0
         self.health_initialization()
         self.failure_detection = False  #"False"
-        self.critic_comp = "Not yet detected!"
-        self.rul = None
-        self.contingency = "False"
-        self.asset_risk = "False"
-        self.mission_risk = "False"
+        # self.critic_comp = "Not yet detected!"
+        # self.rul = None
+        # self.contingency = "False"
+        # self.asset_risk = "False"
+        # self.mission_risk = "False"
 
         self._in_mission = False
+        self._flown_distances: List[float] = []     # distances flown for each mission
 
     def health_initialization(self) -> None:
         """Initialsiert die Gesundheitswerte der Motoren, deren failure-Appearance und die Ladung der Batterie.
@@ -60,7 +61,7 @@ class UAV:
         """
         self.flight_mode = 0  # set UAV not-flying
         self.mission_mode = 2  # set UAV available
-        self.mission_progress = 0
+        # self.mission_progress = 0
 
         # initial hover health
         for i in range(len(self.hover_bearing_health)):
@@ -88,6 +89,8 @@ class UAV:
 
         # initial battery health
         self.battery_level = 1
+        
+        self._flown_distances = []
 
     def health_index(self) -> int:  # 26
         """Berechnet das Minimum der Gesundheitswerte der Motoren.
@@ -189,6 +192,7 @@ class UAV:
         return self.failure_detection
     
     def startMission(self):    # TODO: coordinate this with other redundant attributes
+        self._flown_distances.append(0)
         self._in_mission = True
     
     def stopMission(self):     # TODO: coordinate this with other redundant attributes
@@ -200,6 +204,12 @@ class UAV:
     def hasFailed(self) -> bool:
         return self.failure_detection
 
+    def flyMinute(self):
+        self._flown_distances[-1] += self.CRUISE_SPEED / 60
+    
+    def getFlownDistances(self):
+        return self._flown_distances
+        
     def getStats(self) -> np.ndarray:
         return UAVStats(self).get()
 

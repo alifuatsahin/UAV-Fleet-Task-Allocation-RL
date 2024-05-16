@@ -16,6 +16,10 @@ class Fleet:
     def __len__(self):
         return len(self._uavs)
     
+    def __iter__(self):
+        for uav in self._uavs:
+            yield uav
+    
     def hasFailed(self) -> bool:
         return any(uav.hasFailed() for uav in self._uavs)
     

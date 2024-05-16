@@ -18,7 +18,7 @@ class UAVGymEnv(gym.Env):
         self.distance = self.MissionGenerator.generate()
         self._setupActionSpace()
         self._setupObservationSpace()
-        self._statistics = Statistics()
+        self._statistics = Statistics(self.Fleet)
 
     def seed(self, seed: int):
         self.np_random, seed = gym.utils.seeding.np_random(seed)
@@ -55,7 +55,7 @@ class UAVGymEnv(gym.Env):
         return self._getObservation(), info
 
     def step(self, action: np.ndarray) -> tuple:
-        self._statistics.step(self.Fleet.getStats())
+        self._statistics.step()
         terminate = self.Fleet.executeMission(self.distance, action)
         self.distance = self.MissionGenerator.generate()
         reward = self._reward(terminate)
@@ -86,3 +86,6 @@ class UAVGymEnv(gym.Env):
         see Statistic.plot_all_metrics
         """
         self._statistics.plot_all_metrics(uav_index, plot_strategy, metric_subindex)
+
+    def plot_flown_distances(self):
+        self._statistics.plot_flown_distances()

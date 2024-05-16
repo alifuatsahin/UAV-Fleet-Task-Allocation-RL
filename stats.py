@@ -2,6 +2,7 @@ import numpy as np
 from typing import List
 import matplotlib.pyplot as plt
 from uav import UAVStats
+from fleet import Fleet
 
 
 class Statistics:
@@ -15,16 +16,21 @@ class Statistics:
     LOWEST = 2      # lowest value
     HIGHEST = 3
     
-    def __init__(self):
+    def __init__(self, fleet: Fleet):
+        self._fleet = fleet
         self._degradations: List[np.ndarray] = []   # will be reset when env is reset
         self._total_history_degradations: List[np.ndarray] = []     # won't be reset when env is reset
+        self._flown_distances: List[List[float]] = []
     
     def reset(self):
         self._degradations.clear()
+        self._flown_distances.clear()
         
-    def step(self, degradation: np.ndarray):
+    def step(self):
+        degradation = self._fleet.getStats()
         self._degradations.append(degradation)
         self._total_history_degradations.append(degradation)
+        self._flown_distances.append([sum(uav.getFlownDistances()) for uav in self._fleet])
     
     def get_metric_vals(self, degradations, metric, uav_index, plot_strategy, metric_subindex):
         metric_vals = UAVStats.get_metric(degradations, metric, uav_index)
@@ -46,7 +52,7 @@ class Statistics:
             elif plot_strategy == self.HIGHEST: label %= "s highest"
         return label
 
-    def plot_one_metric(self, metric: int, uav_index: int = None, plot_strategy: int = None, metric_subindex: int = None, fleet_length: int=0):
+    def plot_one_metric(self, metric: int, uav_index: int = None, plot_strategy: int = None, metric_subindex: int = None):
         # TODO: implement plot strategies also between UAVs not only between subindices of a multivalue metric
         # TODO: maybe split this function into multiple functions with more specific usages for more simplicity of API
         """
@@ -68,13 +74,13 @@ class Statistics:
             
         degradations = np.stack(self._degradations, axis=-1)
         if uav_index is None and metric in UAVStats.MULTIVALUE_METRICS:
-            metric_vals = [self.get_metric_vals(degradations, metric, i, plot_strategy, metric_subindex) for i in range(fleet_length)]
+            metric_vals = [self.get_metric_vals(degradations, metric, i, plot_strategy, metric_subindex) for i in range(len(self._fleet))]
         else:
             metric_vals = self.get_metric_vals(degradations, metric, uav_index, plot_strategy, metric_subindex)
             
         step_count = len(self._degradations)
         x = np.arange(step_count)
-        plt.xlabel("Time in min (steps)")# (in minutes I think)")
+        plt.xlabel("Number of missions")
         name = self.get_metric_label(metric, plot_strategy, metric_subindex)
         if uav_index is None:
             for i, m in enumerate(metric_vals):
@@ -99,5 +105,15 @@ class Statistics:
             label = self.get_metric_label(metric, plot_strategy, metric_subindex)
             plt.plot(x, vals, label=label)
         plt.ylabel(f"Degradations of UAV {uav_index+1}")
-        plt.xlabel("Time in min (steps)")
+        plt.xlabel("Number of missions")
         plt.legend()
+
+    def plot_flown_distances(self):
+        flown_distances = np.array(self._flown_distances)
+        step_count = len(self._degradations)
+        x = np.arange(step_count)
+        for i in range(len(self._fleet)):
+            plt.plot(x, flown_distances[:, i], label=f"uav {i+1}")
+        plt.xlabel("Number of missions")
+        plt.ylabel(f"Total flown distances")
+        #plt.legend()
