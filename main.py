@@ -27,7 +27,7 @@ agent = Agent(env=env,
             lr=0.0001,
             update_interval=1,
             auto_entropy=True,
-            policy="Dirichlet")
+            policy="Gaussian")
 
 # Memory
 memory = ReplayBuffer(capacity=1000000, seed=1234)

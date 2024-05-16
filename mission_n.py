@@ -4,6 +4,7 @@ import numpy as np
 import random
 
 class MissionGenerator:
+    
     def __init__(self, max_distance, np_random=None):
         self._max_distance = max_distance
         self._history = []

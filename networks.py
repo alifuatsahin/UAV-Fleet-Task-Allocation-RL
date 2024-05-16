@@ -162,6 +162,6 @@ class DirichletPolicy(nn.Module):
         alpha = self.forward(state)
         dist = Dirichlet(alpha)
         actions = dist.rsample()
-        log_probs = dist.log_prob(actions).unsqueeze(0)
+        log_probs = dist.log_prob(actions).unsqueeze(1)
 
         return actions, log_probs

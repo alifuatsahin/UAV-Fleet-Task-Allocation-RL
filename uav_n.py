@@ -5,10 +5,6 @@ class UAV:
 
     def __init__(self, uav_id: int):
         self.uav_id = uav_id
-        self.p_hover_dist = 0
-        self.hover_dist = 0
-        self.p_cruise_dist = 0
-        self.cruise_dist = 0
 
         self.hover_bearing_health = np.zeros(4)
         self.hover_bearing_factors = np.zeros(4)
