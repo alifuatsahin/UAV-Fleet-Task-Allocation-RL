@@ -1,6 +1,8 @@
 import torch as th
 import torch.nn.functional as F
 import torch.optim as optim
+import numpy as np
+
 from networks import CriticNetwork, GaussianPolicy, DirichletPolicy
 from utils import soft_update, hard_update
 
@@ -34,7 +36,7 @@ class Agent:
             self.policy = DirichletPolicy(env.observation_space.shape[0], env.action_space.shape[0], hidden_dim).to(self.device)
 
         if auto_entropy:
-            self.target_entropy = -th.prod(th.Tensor(env.action_space.shape[0]).to(self.device)).item() #-0.1 * np.log(1/env.action_space.shape[0]) 
+            self.target_entropy = -0.1*th.prod(th.Tensor(env.action_space.shape[0]).to(self.device)).item() #-0.98 * np.log(1/env.action_space.shape[0])
             self.log_alpha = th.zeros(1, requires_grad=True, device=self.device)
             self.alpha_optim = optim.Adam([self.log_alpha], lr=lr, eps=1e-4)
 
@@ -82,6 +84,8 @@ class Agent:
         self.policy_optim.step()
 
         if self.auto_entropy:
+            self.target_entropy = self.target_entropy_schedule(self.target_entropy, action, log_pi)
+            
             alpha_loss = -(self.log_alpha * (log_pi + self.target_entropy).detach()).mean()
 
             self.alpha_optim.zero_grad()
@@ -99,4 +103,28 @@ class Agent:
             soft_update(self.critic_target, self.critic, self.tau)
 
         return qf1_loss.item(), qf2_loss.item(), policy_loss.item(), alpha_loss.item(), alpha_tlogs.item()
+    
+    def target_entropy_schedule(self, target_entropy, actions, log_pi):
+        exp_discount = 0.999
+        avg_threshold = 0.01
+        std_threshold = 0.05
+        discount_factor = 0.999
+        max_iter = 1000
+
+        actions = actions.clone().detach().to(self.device).numpy()
+        log_pi = log_pi.clone().detach().to(self.device).numpy()
+
+        mu_hat = target_entropy
+        policy_entropy = (actions*log_pi).sum()
+        sigma = 0
+        for i in range(max_iter):
+            delta = policy_entropy - mu_hat
+            mu_hat = mu_hat + delta * (1-exp_discount)
+            sigma = np.sqrt(exp_discount * (sigma**2 + (1-exp_discount) * delta**2))
+            if not (target_entropy - avg_threshold < mu_hat and target_entropy + avg_threshold > mu_hat) or std_threshold > sigma:
+                return target_entropy
+            else:
+                target_entropy = target_entropy * discount_factor
+
+        return target_entropy
 

@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from uav import UAVStats
 from stats import Statistics
-
+from copy import deepcopy
 
 from agent import Agent
 from buffer import ReplayBuffer
@@ -24,12 +24,12 @@ th.manual_seed(1234)
 agent = Agent(env=env, 
             hidden_dim=[256, 256],
             batch_size=256,
-            alpha=0.01,
+            alpha=0.1,
             gamma=0.99,
             tau=0.005,
             lr=0.0001,
             update_interval=1,
-            auto_entropy=False,
+            auto_entropy=True,
             policy="Dirichlet")
 
 # Memory
@@ -92,17 +92,20 @@ try:
         if total_timesteps > start_steps:
             rewards.append(episode_reward)
 
+        current_env = deepcopy(env)
+
         print("Total Timesteps: {} Episode Num: {} Episode Timesteps: {} Reward: {}".format(total_timesteps, i, episode_timesteps, episode_reward))
 
 except KeyboardInterrupt:
-    j = env.Fleet.getMostUsedUAV()
-    env.plot_all_metrics(j)
+    j = current_env.Fleet.getMostUsedUAV()
+    current_env.plot_all_metrics(j)
     plt.figure()
-    env.plot_flown_distances(show_legend=False)
+    current_env.plot_flown_distances(show_legend=False)
     plt.figure()
-    env.plot_one_metric(UAVStats.HOVER_BEARING_HEALTH, uav_index=None, plot_strategy=Statistics.LOWEST, show_legend=False)
+    current_env.plot_one_metric(UAVStats.HOVER_BEARING_HEALTH, uav_index=None, plot_strategy=Statistics.LOWEST, show_legend=False)
     plt.show()
-    
+
+
     data = {
         'score': rewards,
         'episode number': range(len(rewards)),
