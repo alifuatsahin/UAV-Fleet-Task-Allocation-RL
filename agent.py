@@ -51,20 +51,17 @@ class Agent:
 
         state_batch = th.FloatTensor(state_batch).to(self.device)
         action_batch = th.FloatTensor(action_batch).to(self.device)
-        reward_batch = th.FloatTensor(reward_batch).to(self.device)
+        reward_batch = th.FloatTensor(reward_batch).to(self.device).unsqueeze(1)
         next_state_batch = th.FloatTensor(next_state_batch).to(self.device)
-        mask_batch = th.FloatTensor(mask_batch).to(self.device)
+        mask_batch = th.FloatTensor(mask_batch).to(self.device).unsqueeze(1)
 
         with th.no_grad():
             next_action, next_log_pi = self.policy.sample(next_state_batch)
             qf1_next_target, qf2_next_target = self.critic_target(next_state_batch, next_action)
             min_qf_next_target = th.min(qf1_next_target, qf2_next_target) - self.alpha * next_log_pi
-            min_qf_next_target = min_qf_next_target.view(-1)
             next_q_value = reward_batch + self.gamma * (1-mask_batch) * min_qf_next_target
 
         qf1, qf2 = self.critic(state_batch, action_batch)
-        qf1 = qf1.view(-1)
-        qf2 = qf2.view(-1)
         qf1_loss = F.mse_loss(qf1, next_q_value)
         qf2_loss = F.mse_loss(qf2, next_q_value)
         qf_loss = qf1_loss + qf2_loss

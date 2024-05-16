@@ -88,9 +88,12 @@ try:
         # example plotting
         #env.plot_one_metric(UAVStats.PUSHER_BEARING_HEALTH, uav_index=None)
         #env.plot_one_metric(UAVStats.HOVER_BEARING_HEALTH, uav_index=None, plot_strategy=Statistics.LOWEST)
-        env.plot_all_metrics(0)
+        i = env.Fleet.getMostUsedUAV()
+        env.plot_all_metrics(i)
         plt.figure()
         env.plot_flown_distances()
+        plt.figure()
+        env.plot_one_metric(UAVStats.HOVER_BEARING_HEALTH, uav_index=None, plot_strategy=Statistics.LOWEST)
         plt.show()
             
         if total_timesteps > start_steps:
