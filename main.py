@@ -120,7 +120,7 @@ except KeyboardInterrupt:
     }
 
     df = pd.DataFrame(data)
-    df.to_csv('./plots/data.csv', index=False)
+    df.to_csv('./logs/data.csv', index=False)
 
     fig, ax = plt.subplots()
     rewards = np.convolve(rewards, np.ones(moving_average)/moving_average, 'valid')
@@ -128,7 +128,7 @@ except KeyboardInterrupt:
     ax.set(xlabel='Episode', ylabel="Score",
         title="Score vs Iterations")
 
-    fig.savefig("./plots/Score.png")
+    fig.savefig("./logs/Score.png")
 
     for name, value in loss.items():
         fig, ax = plt.subplots()
@@ -137,4 +137,4 @@ except KeyboardInterrupt:
         ax.set(xlabel='Iterations', ylabel="{}".format(name),
             title="{} vs Iterations".format(name))
 
-        fig.savefig("./plots/{}.png".format(name))
+        fig.savefig("./logs/{}.png".format(name))
