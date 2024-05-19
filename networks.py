@@ -35,24 +35,6 @@ class CriticNetwork(nn.Module):
         self.Q1.add_module('output', nn.Linear(hidden_dims[-1], 1))
         self.Q2.add_module('output', nn.Linear(hidden_dims[-1], 1))
 
-        # # Q1 architecture
-        # self.Q1 = nn.Sequential(
-        #     nn.Linear(state_dim + action_dim, hidden_dim),
-        #     nn.ReLU(),
-        #     nn.Linear(hidden_dim, hidden_dim),
-        #     nn.ReLU(),
-        #     nn.Linear(hidden_dim, 1)
-        # )
-
-        # # Q2 architecture
-        # self.Q2 = nn.Sequential(
-        #     nn.Linear(state_dim + action_dim, hidden_dim),
-        #     nn.ReLU(),
-        #     nn.Linear(hidden_dim, hidden_dim),
-        #     nn.ReLU(),
-        #     nn.Linear(hidden_dim, 1)
-        # )
-
         self.apply(weights_init_)
 
     def forward(self, state, action):
@@ -76,14 +58,6 @@ class GaussianPolicy(nn.Module):
             for i in range(len(hidden_dims)-1):
                 self.model.add_module('linear_{}'.format(i), nn.Linear(hidden_dims[i], hidden_dims[i+1]))
                 self.model.add_module('relu', nn.ReLU())
-
-        # # policy architecture
-        # self.layers = nn.Sequential(
-        #     nn.Linear(state_dim, hidden_dim),
-        #     nn.ReLU(),
-        #     nn.Linear(hidden_dim, hidden_dim),
-        #     nn.ReLU()
-        # )
 
         self.mean = nn.Linear(hidden_dims[-1], action_space.shape[0])
         self.log_std = nn.Linear(hidden_dims[-1], action_space.shape[0])
@@ -141,16 +115,6 @@ class DirichletPolicy(nn.Module):
 
         self.policy.add_module('output', nn.Linear(hidden_dims[-1], action_dim))
         self.policy.add_module('softplus', nn.Softplus())
-
-        # # policy architecture
-        # self.policy = nn.Sequential(
-        #     nn.Linear(state_dim, hidden_dim),
-        #     nn.LeakyReLU(),
-        #     nn.Linear(hidden_dim, hidden_dim),
-        #     nn.Tanh(),
-        #     nn.Linear(hidden_dim, action_dim),
-        #     nn.Softplus()
-        # )
 
         self.apply(weights_init_)
 

@@ -1,3 +1,5 @@
+import os
+
 import torch as th
 import torch.nn.functional as F
 import torch.optim as optim
@@ -126,4 +128,26 @@ class Agent:
                 return target_entropy
 
         return target_entropy*discount_factor
+    
+    def save_checkpoint(self, env_name, suffix="", ckpt_path=None):
+        if not os.path.exists('logs/'):
+            os.makedirs('logs/')
+        if ckpt_path is None:
+            ckpt_path = "logs/sac_checkpoint_{}_{}".format(env_name, suffix)
+        print('Saving models to {}'.format(ckpt_path))
+        th.save({'policy_state_dict': self.policy.state_dict(),
+                    'critic_state_dict': self.critic.state_dict(),
+                    'critic_target_state_dict': self.critic_target.state_dict(),
+                    'critic_optimizer_state_dict': self.critic_optim.state_dict(),
+                    'policy_optimizer_state_dict': self.policy_optim.state_dict()}, ckpt_path)
+
+    def load_checkpoint(self, ckpt_path):
+        print('Loading models from {}'.format(ckpt_path))
+        if ckpt_path is not None:
+            checkpoint = th.load(ckpt_path)
+            self.policy.load_state_dict(checkpoint['policy_state_dict'])
+            self.critic.load_state_dict(checkpoint['critic_state_dict'])
+            self.critic_target.load_state_dict(checkpoint['critic_target_state_dict'])
+            self.critic_optim.load_state_dict(checkpoint['critic_optimizer_state_dict'])
+            self.policy_optim.load_state_dict(checkpoint['policy_optimizer_state_dict'])
 
