@@ -14,11 +14,11 @@ from agent import Agent
 from buffer import ReplayBuffer
 from UAV_gym_env import UAVGymEnv
 
+date_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+ckpt_path = "logs/checkpoint_{}".format(date_time)
+
 # env = gym.make("HalfCheetah-v4")
 # env.action_space.seed(1234)
-
-folder_name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-ckpt_path = f'./logs/{folder_name}'
 
 env = UAVGymEnv(uav_number=4, max_distance=100)
 env.seed(1234)
@@ -102,10 +102,11 @@ try:
         print("Total Timesteps: {} Episode Num: {} Episode Timesteps: {} Reward: {}".format(total_timesteps, i, episode_timesteps, episode_reward))
 
 except KeyboardInterrupt:
+
     if not os.path.exists(ckpt_path):
         os.makedirs(ckpt_path)
 
-    agent.save_checkpoint(env_name="UAV", suffix="final", ckpt_path=ckpt_path)
+    agent.save_checkpoint(env_name="UAV", suffix="episodes_{}".format(episode_timesteps), ckpt_path=ckpt_path)
 
     data = {
         'score': rewards,

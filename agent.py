@@ -38,7 +38,7 @@ class Agent:
             self.policy = DirichletPolicy(env.observation_space.shape[0], env.action_space.shape[0], hidden_dim).to(self.device)
 
         if auto_entropy:
-            self.target_entropy = -0.98 * np.log(1/env.action_space.shape[0]) #-th.prod(th.Tensor(env.action_space.shape[0]).to(self.device)).item()
+            self.target_entropy = -0.001 * np.log(1/env.action_space.shape[0]) #-th.prod(th.Tensor(env.action_space.shape[0]).to(self.device)).item()
             self.log_alpha = th.zeros(1, requires_grad=True, device=self.device)
             self.alpha_optim = optim.Adam([self.log_alpha], lr=lr, eps=1e-4)
 
@@ -130,16 +130,15 @@ class Agent:
         return target_entropy*discount_factor
     
     def save_checkpoint(self, env_name, suffix="", ckpt_path=None):
-        if not os.path.exists('logs/'):
-            os.makedirs('logs/')
         if ckpt_path is None:
-            ckpt_path = "logs/sac_checkpoint_{}_{}".format(env_name, suffix)
+            ckpt_path = "logs/checkpoint_{}_{}".format(env_name, suffix)
+        save_path = os.path.join(ckpt_path, 'model.pt')
         print('Saving models to {}'.format(ckpt_path))
         th.save({'policy_state_dict': self.policy.state_dict(),
                     'critic_state_dict': self.critic.state_dict(),
                     'critic_target_state_dict': self.critic_target.state_dict(),
                     'critic_optimizer_state_dict': self.critic_optim.state_dict(),
-                    'policy_optimizer_state_dict': self.policy_optim.state_dict()}, ckpt_path)
+                    'policy_optimizer_state_dict': self.policy_optim.state_dict()}, save_path)
 
     def load_checkpoint(self, ckpt_path):
         print('Loading models from {}'.format(ckpt_path))
