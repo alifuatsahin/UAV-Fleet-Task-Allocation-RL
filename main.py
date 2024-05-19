@@ -15,6 +15,9 @@ from UAV_gym_env import UAVGymEnv
 # env = gym.make("HalfCheetah-v4")
 # env.action_space.seed(1234)
 
+folder_name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+ckpt_path = f'./logs/{folder_name}'
+
 env = UAVGymEnv(uav_number=4, max_distance=100)
 env.seed(1234)
 
