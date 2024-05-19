@@ -6,6 +6,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from uav import UAVStats
 from stats import Statistics
+import datetime
+import os
 from copy import deepcopy
 
 from agent import Agent
@@ -100,14 +102,10 @@ try:
         print("Total Timesteps: {} Episode Num: {} Episode Timesteps: {} Reward: {}".format(total_timesteps, i, episode_timesteps, episode_reward))
 
 except KeyboardInterrupt:
-    j = current_env.Fleet.getMostUsedUAV()
-    current_env.plot_all_metrics(j)
-    plt.figure()
-    current_env.plot_flown_distances(show_legend=False)
-    plt.figure()
-    current_env.plot_one_metric(UAVStats.HOVER_BEARING_HEALTH, uav_index=None, plot_strategy=Statistics.LOWEST, show_legend=False)
-    plt.show()
+    if not os.path.exists(ckpt_path):
+        os.makedirs(ckpt_path)
 
+    agent.save_checkpoint(env_name="UAV", suffix="final", ckpt_path=ckpt_path)
 
     data = {
         'score': rewards,
@@ -123,7 +121,20 @@ except KeyboardInterrupt:
     }
 
     df = pd.DataFrame(data)
-    df.to_csv('./logs/data.csv', index=False)
+    df.to_csv(ckpt_path + '/hdata.csv', index=False)
+
+    j = current_env.Fleet.getMostUsedUAV()
+    plt.figure()
+    current_env.plot_all_metrics(j)
+    plt.savefig(ckpt_path + "/metrics.png")
+
+    plt.figure()
+    current_env.plot_flown_distances(show_legend=False)
+    plt.savefig(ckpt_path + "/flown_distances.png")
+
+    plt.figure()
+    current_env.plot_one_metric(UAVStats.HOVER_BEARING_HEALTH, uav_index=None, plot_strategy=Statistics.LOWEST, show_legend=False)
+    plt.savefig(ckpt_path + "/hover_bearing_health.png")
 
     fig, ax = plt.subplots()
     rewards = np.convolve(rewards, np.ones(moving_average)/moving_average, 'valid')
@@ -131,7 +142,7 @@ except KeyboardInterrupt:
     ax.set(xlabel='Episode', ylabel="Score",
         title="Score vs Iterations")
 
-    fig.savefig("./logs/Score.png")
+    fig.savefig(ckpt_path + "/score.png")
 
     for name, value in loss.items():
         fig, ax = plt.subplots()
@@ -140,4 +151,4 @@ except KeyboardInterrupt:
         ax.set(xlabel='Iterations', ylabel="{}".format(name),
             title="{} vs Iterations".format(name))
 
-        fig.savefig("./logs/{}.png".format(name))
+        fig.savefig(ckpt_path + "/{}.png".format(name))
