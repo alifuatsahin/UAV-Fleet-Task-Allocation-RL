@@ -24,7 +24,7 @@ th.manual_seed(1234)
 agent = Agent(env=env, 
             hidden_dim=[256, 256],
             batch_size=256,
-            alpha=0.1,
+            alpha=0.01,
             gamma=0.99,
             tau=0.005,
             lr=0.0001,
