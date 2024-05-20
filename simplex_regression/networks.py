@@ -86,8 +86,8 @@ class GaussianPolicy(nn.Module):
 
         normal = Normal(mean, std)
         z = normal.rsample()
-        y = th.tanh(z)
-        action = y * self.action_scale + self.action_bias
+        y = F.softmax(z)
+        action = y
 
         log_pi = normal.log_prob(z) - th.log(self.action_scale * (1 - y.pow(2)) + EPS)
         log_pi = log_pi.sum(1, keepdim=True)
@@ -120,6 +120,8 @@ class DirichletPolicy(nn.Module):
 
     def forward(self, state):
         alpha = self.policy(state) + 1
+        if th.isnan(alpha).any():
+            print(state)
         return alpha
 
     def sample(self, state):

@@ -12,7 +12,7 @@ from buffer import ReplayBuffer
 from regression_gym import SimplexGymEnv
 
 date_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-ckpt_path = "logs/checkpoint_regression_{}".format(date_time)
+ckpt_path = "logs/checkpoint_regression_gauss_{}".format(date_time)
 
 env = SimplexGymEnv(simplex_size=4)
 
@@ -20,15 +20,15 @@ th.manual_seed(1234)
 
 # Agent
 agent = Agent(env=env, 
-            hidden_dim=[64, 64],
+            hidden_dim=[64, 64, 64],
             batch_size=256,
-            alpha=0.01,
+            alpha=0.2,
             gamma=0.99,
             tau=0.005,
-            lr=0.0001,
+            lr=0.1,
             update_interval=1,
-            auto_entropy=True,
-            policy="Dirichlet")
+            auto_entropy=False,
+            policy="Gaussian",)
 
 # Memory
 memory = ReplayBuffer(capacity=1000000, seed=1234)
