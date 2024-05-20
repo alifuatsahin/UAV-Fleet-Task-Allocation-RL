@@ -5,15 +5,15 @@ import random
 
 class MissionGenerator:
 
-    def __init__(self, max_distance, np_random=None):
+    def __init__(self, max_distance, seed):
         self._max_distance = max_distance
         self._history = []
-        self.np_random = np_random
+        np.random.seed(seed)
         self.generate()
     
     def generate(self):
-        distance = self.np_random.integers(0, self._max_distance)
-        prop = self.np_random.uniform(0.3, 0.7)
+        distance = np.random.integers(0, self._max_distance)
+        prop = np.random.uniform(0.3, 0.7)
         hover_distance = distance*(1-prop)
         cruise_distance = distance*prop
         self._history.append([hover_distance, cruise_distance])

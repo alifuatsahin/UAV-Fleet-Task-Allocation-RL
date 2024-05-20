@@ -14,15 +14,11 @@ class UAVGymEnv(gym.Env):
         self._max_distance = max_distance
         self.Fleet = Fleet(uav_number, seed)
         self._health_state_dim = self.Fleet.getStats().shape[0]
-        self.seed(seed)
+        self.MissionGenerator = MissionGenerator(self._max_distance, seed)
         self.hover_distance, self.cruise_distance = self.MissionGenerator.generate()
         self._setupActionSpace()
         self._setupObservationSpace()
         self._statistics = Statistics(self.Fleet)
-
-    def seed(self, seed: int):
-        self.np_random, seed = gym.utils.seeding.np_random(seed)
-        self.MissionGenerator = MissionGenerator(self._max_distance, self.np_random)
 
     def _setupActionSpace(self):
         self._action_high = 1
