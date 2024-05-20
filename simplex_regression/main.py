@@ -5,28 +5,27 @@ import itertools
 import pandas as pd
 import matplotlib.pyplot as plt
 from uav import UAVStats
-from stats import Statistics
 import datetime
 import os
 from copy import deepcopy
 
 from agent import Agent
 from buffer import ReplayBuffer
-from UAV_gym_env import UAVGymEnv
+from regression_gym import SimplexGymEnv
 
 date_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-ckpt_path = "logs/checkpoint_{}".format(date_time)
+ckpt_path = "logs/checkpoint_regression_{}".format(date_time)
 
 # env = gym.make("HalfCheetah-v4")
 # env.action_space.seed(1234)
 
-env = UAVGymEnv(uav_number=4, max_distance=100)
+env = SimplexGymEnv(simplex_size=4)
 
 th.manual_seed(1234)
 
 # Agent
 agent = Agent(env=env, 
-            hidden_dim=[256, 256],
+            hidden_dim=[64, 64],
             batch_size=256,
             alpha=0.01,
             gamma=0.99,
@@ -122,19 +121,6 @@ except KeyboardInterrupt:
 
     df = pd.DataFrame(data)
     df.to_csv(ckpt_path + '/hdata.csv', index=False)
-
-    j = current_env.Fleet.getMostUsedUAV()
-    plt.figure()
-    current_env.plot_all_metrics(j)
-    plt.savefig(ckpt_path + "/metrics.png")
-
-    plt.figure()
-    current_env.plot_flown_distances(show_legend=False)
-    plt.savefig(ckpt_path + "/flown_distances.png")
-
-    plt.figure()
-    current_env.plot_one_metric(UAVStats.HOVER_BEARING_HEALTH, uav_index=None, plot_strategy=Statistics.LOWEST, show_legend=False)
-    plt.savefig(ckpt_path + "/hover_bearing_health.png")
 
     fig, ax = plt.subplots()
     rewards = np.convolve(rewards, np.ones(moving_average)/moving_average, 'valid')
