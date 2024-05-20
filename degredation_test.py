@@ -9,14 +9,14 @@ def get_metric(degredations, metric):
     start = sum(attr_lengths[:metric])
     return np.min(degredations[start:start+attr_lengths[metric]], 0)
 
-uav = UAV(0)
+uav = UAV(0, 1234)
 stats = UAVStats(uav)
 
 uav.startMission()
 degradations = []
 
 while uav.detectFailure() == False:
-    uav.degrade(0.8, 0.2)
+    uav.degrade(0.5, 0.5)
     degredation = uav.getStats()
     degradations.append(degredation)
 

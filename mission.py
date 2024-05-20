@@ -12,10 +12,10 @@ class MissionGenerator:
         self.generate()
     
     def generate(self):
-        # distance = self.np_random.integers(0, self._max_distance)
-        prop = 0.2
-        hover_distance = self._max_distance*(1-prop)
-        cruise_distance = self._max_distance*prop
+        distance = self.np_random.integers(0, self._max_distance)
+        prop = self.np_random.uniform(0.3, 0.7)
+        hover_distance = distance*(1-prop)
+        cruise_distance = distance*prop
         self._history.append([hover_distance, cruise_distance])
         return hover_distance, cruise_distance
 

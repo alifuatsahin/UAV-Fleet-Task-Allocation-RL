@@ -1,13 +1,13 @@
 from __future__ import annotations
 import numpy as np
 import random
-import math
 from typing import List
 
 
 class UAV:
 
-    def __init__(self, uav_id: int):
+    def __init__(self, uav_id: int, seed):
+        np.random.seed(seed)
         self.uav_id = uav_id
 
         self.hover_bearing_health = np.zeros(4)
@@ -26,6 +26,12 @@ class UAV:
         self.pusher_bearing_failure_appearance = None
         self.pusher_coil_failure_appearance = None
 
+        self.hover_bearing_severity = np.random.uniform(1.009, 1.005, 4)
+        self.hover_coil_severity = np.random.uniform(1.009, 1.005, 4)
+
+        self.pusher_bearing_severity = np.random.uniform(1.009, 1.005)
+        self.pusher_coil_severity = np.random.uniform(1.009, 1.005)
+
         self.health_initialization()
         self.failure_detection = False
         
@@ -43,7 +49,7 @@ class UAV:
 
             self.hover_coil_health[i] = healths[2*(i-1)+1]
             self.hover_coil_factors[i] = 1.0
-            self.hover_coil_failure_appearance[i] = round(random.uniform(0.5, 0.55), 3)
+            self.hover_coil_failure_appearance[i] = round(random.uniform(0.4, 0.5), 3)
 
         self.pusher_bearing_health = healths[8]
         self.pusher_bearing_factor = 1
@@ -51,7 +57,7 @@ class UAV:
 
         self.pusher_coil_health = healths[9]
         self.pusher_coil_factor = 1
-        self.pusher_coil_failure_appearance = round(random.uniform(0.5, 0.55), 3)
+        self.pusher_coil_failure_appearance = round(random.uniform(0.4, 0.5), 3)
 
     def generate_healths(self, avg_health: float) -> np.ndarray:
         target_sum = avg_health * 10 # 10 health components
@@ -95,7 +101,7 @@ class UAV:
                     self.hover_coil_factors[j] *= 1.001
                 else:
                     hover_coil_deg_values[j] = self.hover_coil_factors[j]*round(random.uniform(1, 5) * 0.0001, 6)
-                    self.hover_coil_factors[j] *= 1.006
+                    self.hover_coil_factors[j] *= 1.007
                     
             self.hover_coil_health -= hover*hover_coil_deg_values
 
@@ -114,7 +120,7 @@ class UAV:
                 self.pusher_coil_factor *= 1.001
             else:
                 pusher_coil_deg_rate = self.pusher_coil_factor*round(random.uniform(1, 5) * 0.0001, 6)
-                self.pusher_coil_factor *= 1.006
+                self.pusher_coil_factor *= 1.007
 
             self.pusher_coil_health -= cruise*pusher_coil_deg_rate
 

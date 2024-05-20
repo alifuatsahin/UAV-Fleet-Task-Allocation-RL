@@ -3,11 +3,11 @@ from mission import Mission
 import numpy as np
 
 class Fleet:
-    def __init__(self, size: int):
-        self._uavs = self._generateUAVs(size)
+    def __init__(self, size: int, seed: int):
+        self._uavs = self._generateUAVs(size, seed)
 
-    def _generateUAVs(self, size):
-        return [UAV(i) for i in range(size)]    # maybe give i+1 to match with their code if we get into problems (but should be fine)
+    def _generateUAVs(self, size, seed):
+        return [UAV(i, seed) for i in range(size)]    # maybe give i+1 to match with their code if we get into problems (but should be fine)
 
     def reset(self):
         [uav.health_initialization() for uav in self._uavs]

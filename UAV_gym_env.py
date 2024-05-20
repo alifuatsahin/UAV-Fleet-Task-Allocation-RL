@@ -12,7 +12,7 @@ class UAVGymEnv(gym.Env):
         super(UAVGymEnv, self).__init__()
         self._uav_number = uav_number
         self._max_distance = max_distance
-        self.Fleet = Fleet(uav_number)
+        self.Fleet = Fleet(uav_number, seed)
         self._health_state_dim = self.Fleet.getStats().shape[0]
         self.seed(seed)
         self.hover_distance, self.cruise_distance = self.MissionGenerator.generate()
