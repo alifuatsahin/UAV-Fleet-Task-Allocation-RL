@@ -37,11 +37,11 @@ class UAV:
         healths = self.generate_healths(0.9)
         
         for i in range(len(self.hover_bearing_health)):
-            self.hover_bearing_health[i] = healths[i]
+            self.hover_bearing_health[i] = healths[2*(i-1)]
             self.hover_bearing_factors[i] = 1.0
             self.hover_bearing_failure_appearance[i] = round(random.uniform(0.5, 0.55), 3)
 
-            self.hover_coil_health[i] = healths[i+1]
+            self.hover_coil_health[i] = healths[2*(i-1)+1]
             self.hover_coil_factors[i] = 1.0
             self.hover_coil_failure_appearance[i] = round(random.uniform(0.5, 0.55), 3)
 
@@ -54,7 +54,7 @@ class UAV:
         self.pusher_coil_failure_appearance = round(random.uniform(0.5, 0.55), 3)
 
     def generate_healths(self, avg_health: float) -> np.ndarray:
-        target_sum = avg_health * 10
+        target_sum = avg_health * 10 # 10 health components
         num_values = 10 
         lower_bound = 0.8
         upper_bound = 1.0
