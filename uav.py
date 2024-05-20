@@ -34,23 +34,44 @@ class UAV:
     def health_initialization(self) -> None:
         self.flight_mode = 0
         self._flown_distances = []
+        healths = self.generate_healths(0.9)
         
         for i in range(len(self.hover_bearing_health)):
-            self.hover_bearing_health[i] = random.uniform(0.80, 1.0)
+            self.hover_bearing_health[i] = healths[i]
             self.hover_bearing_factors[i] = 1.0
             self.hover_bearing_failure_appearance[i] = round(random.uniform(0.5, 0.55), 3)
 
-            self.hover_coil_health[i] = random.uniform(0.80, 1.0)
+            self.hover_coil_health[i] = healths[i+1]
             self.hover_coil_factors[i] = 1.0
             self.hover_coil_failure_appearance[i] = round(random.uniform(0.5, 0.55), 3)
 
-        self.pusher_bearing_health = random.uniform(0.80, 1.0)
+        self.pusher_bearing_health = healths[8]
         self.pusher_bearing_factor = 1
         self.pusher_bearing_failure_appearance = round(random.uniform(0.5, 0.55), 3)
 
-        self.pusher_coil_health = random.uniform(0.80, 1.0)
+        self.pusher_coil_health = healths[9]
         self.pusher_coil_factor = 1
         self.pusher_coil_failure_appearance = round(random.uniform(0.5, 0.55), 3)
+
+    def generate_healths(self, avg_health: float) -> np.ndarray:
+        target_sum = avg_health * 10
+        num_values = 10 
+        lower_bound = 0.8
+        upper_bound = 1.0
+
+        values = np.random.uniform(lower_bound, upper_bound, num_values)
+
+        current_sum = np.sum(values)
+        scale_factor = target_sum / current_sum
+        scaled_values = values * scale_factor
+
+        while np.any(scaled_values < lower_bound) or np.any(scaled_values > upper_bound):
+            values = np.random.uniform(lower_bound, upper_bound, num_values)
+            current_sum = np.sum(values)
+            scale_factor = target_sum / current_sum
+            scaled_values = values * scale_factor
+
+        return scaled_values
 
     def degrade(self, hover: float, cruise: float) -> None:
         self.flyMinute()    # for stats
