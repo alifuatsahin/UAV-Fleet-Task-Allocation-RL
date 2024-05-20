@@ -27,10 +27,10 @@ class UAV:
         self.pusher_coil_failure_appearance = None
 
         self.hover_bearing_severity = np.random.uniform(1.009, 1.005, 4)
-        self.hover_coil_severity = np.random.uniform(1.009, 1.005, 4)
+        self.hover_coil_severity = np.random.uniform(1.009, 1.007, 4)
 
         self.pusher_bearing_severity = np.random.uniform(1.009, 1.005)
-        self.pusher_coil_severity = np.random.uniform(1.009, 1.005)
+        self.pusher_coil_severity = np.random.uniform(1.009, 1.007)
 
         self.health_initialization()
         self.failure_detection = False
@@ -90,7 +90,7 @@ class UAV:
                     self.hover_bearing_factors[j] *= 1.001
                 else:
                     hover_bearing_deg_values[j] = self.hover_bearing_factors[j]*round((random.uniform(1, 5) * 0.0001), 6)
-                    self.hover_bearing_factors[j] *= 1.006
+                    self.hover_bearing_factors[j] *= self.hover_bearing_severity[j]
 
             self.hover_bearing_health -= hover*hover_bearing_deg_values
 
@@ -101,7 +101,7 @@ class UAV:
                     self.hover_coil_factors[j] *= 1.001
                 else:
                     hover_coil_deg_values[j] = self.hover_coil_factors[j]*round(random.uniform(1, 5) * 0.0001, 6)
-                    self.hover_coil_factors[j] *= 1.007
+                    self.hover_coil_factors[j] *= self.hover_coil_severity[j]
                     
             self.hover_coil_health -= hover*hover_coil_deg_values
 
@@ -111,7 +111,7 @@ class UAV:
                 self.pusher_bearing_factor *= 1.001
             else:
                 pusher_bearing_deg_rate = self.pusher_bearing_factor*round(random.uniform(1, 5) * 0.0001, 6)
-                self.pusher_bearing_factor *= 1.006
+                self.pusher_bearing_factor *= self.pusher_coil_severity
 
             self.pusher_bearing_health -= cruise*pusher_bearing_deg_rate
 
@@ -120,7 +120,7 @@ class UAV:
                 self.pusher_coil_factor *= 1.001
             else:
                 pusher_coil_deg_rate = self.pusher_coil_factor*round(random.uniform(1, 5) * 0.0001, 6)
-                self.pusher_coil_factor *= 1.007
+                self.pusher_coil_factor *= self.pusher_coil_severity
 
             self.pusher_coil_health -= cruise*pusher_coil_deg_rate
 
