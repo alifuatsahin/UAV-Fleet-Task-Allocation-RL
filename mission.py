@@ -12,7 +12,7 @@ class MissionGenerator:
         self.generate()
     
     def generate(self):
-        distance = np.random.integers(0, self._max_distance)
+        distance = np.random.randint(0, self._max_distance)
         prop = np.random.uniform(0.3, 0.7)
         hover_distance = distance*(1-prop)
         cruise_distance = distance*prop

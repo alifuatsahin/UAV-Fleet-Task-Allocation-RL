@@ -1,10 +1,8 @@
-import gym
 import numpy as np
 import torch as th
 import itertools
 import pandas as pd
 import matplotlib.pyplot as plt
-from uav import UAVStats
 import datetime
 import os
 from copy import deepcopy
@@ -15,9 +13,6 @@ from regression_gym import SimplexGymEnv
 
 date_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 ckpt_path = "logs/checkpoint_regression_{}".format(date_time)
-
-# env = gym.make("HalfCheetah-v4")
-# env.action_space.seed(1234)
 
 env = SimplexGymEnv(simplex_size=4)
 

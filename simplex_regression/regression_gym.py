@@ -17,9 +17,9 @@ class SimplexGymEnv(gym.Env):
         self.action_space = spaces.Box(low=self._action_low, high=self._action_high, shape=(self.simplex_size,), dtype=np.float32)
 
     def _setupObservationSpace(self):
-        self._obs_low = np.concatenate((np.array([0] * self.simplex_size-1)))
+        self._obs_low = np.concatenate((np.array([0] * (self.simplex_size-1))))
         
-        self._obs_high = np.concatenate((np.array([1] * self.simplex_size-1),))
+        self._obs_high = np.concatenate((np.array([1] * (self.simplex_size-1)),))
 
         self.observation_space = spaces.Box(self._obs_low, self._obs_high, dtype=np.float32)
 
