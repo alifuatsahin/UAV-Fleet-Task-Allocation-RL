@@ -233,6 +233,7 @@ class UAVStats:
         name = cls.STAT_NAMES[metric]
         if health:
             return name + " health"
+        return name
         if metric in cls.MULTIVALUE_METRICS:
             name %= "s"
         return name

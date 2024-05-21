@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 
 fleet = Fleet(1, seed=1234)
 stats = Statistics(fleet)
-N = 100
+N = 1000
 
 for _ in range(N):
     for uav in fleet: uav.startMission()
@@ -17,5 +17,5 @@ for _ in range(N):
 
 # stats.plot_all_metrics(uav_index=0, x_label="Time")
 # plt.show()
-stats.plot_failures()
+stats.plot_failures(True)
 plt.show()

@@ -134,13 +134,27 @@ class Statistics:
         plt.ylabel(f"Total flown distances")
         if show_legend: plt.legend()
 
-    def plot_failures(self):
+    def plot_failures(self, separate_multivalue_metric: bool = False):
         """plot total of failures accross all UAVs for each component"""
         metric_failure_values = []
         for metric in UAVStats.METRICS:
-            count = lambda v: sum(v) if metric in UAVStats.MULTIVALUE_METRICS else v
-            val = sum(count(self._metric_failures[uav_index][metric]) for uav_index in range(len(self._fleet)))
-            metric_failure_values.append(val)
-        metrics = [UAVStats.get_metric_name(metric, health=False) for metric in UAVStats.METRICS]
+            if separate_multivalue_metric and metric in UAVStats.MULTIVALUE_METRICS:
+                for i in range(4):
+                    val = sum(self._metric_failures[uav_index][metric][i] for uav_index in range(len(self._fleet)))
+                    metric_failure_values.append(val)
+            else:
+                count = lambda v: sum(v) if metric in UAVStats.MULTIVALUE_METRICS else v
+                val = sum(count(self._metric_failures[uav_index][metric]) for uav_index in range(len(self._fleet)))
+                metric_failure_values.append(val)
+        metrics = []
+        for metric in UAVStats.METRICS:
+            name = UAVStats.get_metric_name(metric, health=False)
+            if separate_multivalue_metric and metric in UAVStats.MULTIVALUE_METRICS:
+                for i in range(4):
+                    metrics.append(name % f"{i+1}")
+            else:
+                if metric in UAVStats.MULTIVALUE_METRICS:
+                    name %= "s"
+                metrics.append(name)
         plt.bar(metrics, metric_failure_values)
         plt.ylabel("Number of failures")
