@@ -19,8 +19,8 @@ class Fleet:
         for uav in self._uavs:
             yield uav
     
-    def hasFailed(self) -> bool:
-        return any(uav.hasFailed() for uav in self._uavs)
+    def detectFailure(self) -> bool:
+        return any(uav.detectFailure() for uav in self._uavs)
     
     def executeMission(self, hover_distance: float, cruise_distance: float, action: np.ndarray) -> bool:
         hover_uavs = action * hover_distance

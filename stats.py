@@ -21,16 +21,32 @@ class Statistics:
         self._degradations: List[np.ndarray] = []   # will be reset when env is reset
         self._total_history_degradations: List[np.ndarray] = []     # won't be reset when env is reset
         self._flown_distances: List[List[float]] = []
+        default_val = lambda metric: [0]*4 if metric in UAVStats.MULTIVALUE_METRICS else 0
+        self._metric_failures = [{metric: default_val(metric) for metric in UAVStats.METRICS} for _ in range(len(fleet))]
+        self.step()     # register initial states
     
     def reset(self):
         self._degradations.clear()
         self._flown_distances.clear()
         
     def step(self):
+        """update statistics"""
         degradation = self._fleet.getStats()
         self._degradations.append(degradation)
         self._total_history_degradations.append(degradation)
         self._flown_distances.append([sum(uav.getFlownDistances()) for uav in self._fleet])
+        self.detect_failures()
+    
+    def detect_failures(self):
+        for uav_ind, uav in enumerate(self._fleet):
+            for metric in UAVStats.METRICS:
+                if metric in UAVStats.MULTIVALUE_METRICS:
+                    for metric_ind in range(4):
+                        if uav.detectComponentFailure(metric, metric_ind):
+                            self._metric_failures[uav_ind][metric][metric_ind] += 1
+                else:
+                    if uav.detectComponentFailure(metric):
+                        self._metric_failures[uav_ind][metric] += 1
     
     def get_metric_vals(self, degradations, metric, uav_index, plot_strategy, metric_subindex):
         metric_vals = UAVStats.get_metric(degradations, metric, uav_index)
@@ -91,7 +107,7 @@ class Statistics:
             plt.plot(x, metric_vals)
             plt.ylabel(f"UAV {uav_index+1} {name}")
 
-    def plot_all_metrics(self, uav_index: int, plot_strategy: int = None, metric_subindex: int = None):
+    def plot_all_metrics(self, uav_index: int, plot_strategy: int = None, metric_subindex: int = None, x_label: str = "Number of missions"):
         """
         Plot all metrics for a specific UAV
         """
@@ -105,7 +121,7 @@ class Statistics:
             label = self.get_metric_label(metric, plot_strategy, metric_subindex)
             plt.plot(x, vals, label=label)
         plt.ylabel(f"Degradations of UAV {uav_index+1}")
-        plt.xlabel("Number of missions")
+        plt.xlabel(x_label)
         plt.legend()
 
     def plot_flown_distances(self, show_legend: bool = False):
@@ -116,4 +132,15 @@ class Statistics:
             plt.plot(x, flown_distances[:, i], label=f"uav {i+1}")
         plt.xlabel("Number of missions")
         plt.ylabel(f"Total flown distances")
-        #plt.legend()
+        if show_legend: plt.legend()
+
+    def plot_failures(self):
+        """plot total of failures accross all UAVs for each component"""
+        metric_failure_values = []
+        for metric in UAVStats.METRICS:
+            count = lambda v: sum(v) if metric in UAVStats.MULTIVALUE_METRICS else v
+            val = sum(count(self._metric_failures[uav_index][metric]) for uav_index in range(len(self._fleet)))
+            metric_failure_values.append(val)
+        metrics = [UAVStats.get_metric_name(metric, health=False) for metric in UAVStats.METRICS]
+        plt.bar(metrics, metric_failure_values)
+        plt.ylabel("Number of failures")

@@ -134,6 +134,28 @@ class UAV:
 
         return any(component_healths < 0)
 
+    def detectComponentFailure(self, component: int, component_index: int = None) -> bool:
+        """
+        component: among UAVStats.METRICS
+        component_index: for multivalue components
+        """
+        if component == UAVStats.HOVER_BEARING_HEALTH:
+            if component_index is None:
+                return any(x < 0 for x in self.hover_bearing_health)
+            else:
+                return self.hover_bearing_health[component_index] < 0
+        elif component == UAVStats.HOVER_COIL_HEALTH:
+            if component_index is None:
+                return any(x < 0 for x in self.hover_coil_health)
+            else:
+                return self.hover_coil_health[component_index] < 0
+        elif component == UAVStats.PUSHER_BEARING_HEALTH:
+            return self.pusher_bearing_health < 0
+        elif component == UAVStats.PUSHER_COIL_HEALTH:
+            return self.pusher_coil_health < 0
+        else:
+            raise
+        
     def startMission(self):
         self._flown_distances.append(0)
         
@@ -164,10 +186,10 @@ class UAVStats:
     MULTIVALUE_METRICS = [HOVER_BEARING_HEALTH, HOVER_COIL_HEALTH]
     
     STAT_NAMES = {
-        HOVER_BEARING_HEALTH: "hover bearing%s health",
-        HOVER_COIL_HEALTH: "hover coil%s health",
-        PUSHER_BEARING_HEALTH: "pusher bearing health",
-        PUSHER_COIL_HEALTH: "pusher coil health",
+        HOVER_BEARING_HEALTH: "hover bearing%s",
+        HOVER_COIL_HEALTH: "hover coil%s",
+        PUSHER_BEARING_HEALTH: "pusher bearing",
+        PUSHER_COIL_HEALTH: "pusher coil",
         BATTERY_LEVEL: "battery level"
     }
     
@@ -206,8 +228,11 @@ class UAVStats:
         length = attr_lengths[metric]
         return stats[start] if length == 1 else stats[start: start+length]
 
-    
     @classmethod
-    def get_metric_name(cls, metric: int):
+    def get_metric_name(cls, metric: int, health: bool = True):
         name = cls.STAT_NAMES[metric]
+        if health:
+            return name + " health"
+        if metric in cls.MULTIVALUE_METRICS:
+            name %= "s"
         return name

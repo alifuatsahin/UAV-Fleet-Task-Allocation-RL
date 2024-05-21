@@ -29,7 +29,7 @@ metric_vals = [get_metric(degradations, metric) for metric in stats.METRICS]
 step_count = degradations.shape[1]
 x = np.arange(step_count)
 for metric, vals in zip(stats.METRICS, metric_vals):
-    label = stats.STAT_NAMES[metric]
+    label = stats.STAT_NAMES[metric] + " health"
     if metric == 0 or metric == 1:
         label %= "s lowest"
     plt.plot(x, vals, label=label)
