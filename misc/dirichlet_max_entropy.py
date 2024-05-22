@@ -95,7 +95,7 @@ def plot_entropy_vs_action_space_size_log(alpha_value, max_action_space_size, ex
 
     # Fit the function to the data
     popt, pcov = curve_fit(func, action_space_sizes, entropies)
-
+    print(func(action_space_sizes, *popt))
     # Plot the fitted function
     plt.plot(action_space_sizes, func(action_space_sizes, *popt), 'r--', label='fit: A=%5.3f, B=%5.3f, C=%5.3f' % tuple(popt))
     popt[1] = popt[1] + extra
@@ -106,6 +106,6 @@ def plot_entropy_vs_action_space_size_log(alpha_value, max_action_space_size, ex
 
 # plot_entropy_vs_action_space_size(1, 10)
 # Example usage
-plot_entropy_vs_action_space_size_log(alpha_value=1, max_action_space_size=10, extra=0.04)
+plot_entropy_vs_action_space_size_log(alpha_value=5, max_action_space_size=10, extra=0.04)
 
 # plot_entropy_vs_action_space_size_gauss(mean = 3, sigma = 0.5, max_action_space_size=10)
