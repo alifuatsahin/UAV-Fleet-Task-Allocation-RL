@@ -26,11 +26,11 @@ class UAV:
         self.pusher_bearing_failure_appearance = None
         self.pusher_coil_failure_appearance = None
 
-        self.hover_bearing_severity = np.random.uniform(1.009, 1.005, 4)
-        self.hover_coil_severity = np.random.uniform(1.009, 1.007, 4)
+        self.hover_bearing_severity = np.random.uniform(1.005, 1.007, 4)
+        self.hover_coil_severity = np.random.uniform(1.008, 1.01, 4)
 
-        self.pusher_bearing_severity = np.random.uniform(1.009, 1.005)
-        self.pusher_coil_severity = np.random.uniform(1.009, 1.007)
+        self.pusher_bearing_severity = np.random.uniform(1.005, 1.007)
+        self.pusher_coil_severity = np.random.uniform(1.008, 1.01)
 
         self.health_initialization()
         self.failure_detection = False
@@ -40,7 +40,7 @@ class UAV:
     def health_initialization(self) -> None:
         self.flight_mode = 0
         self._flown_distances = []
-        healths = self.generate_healths(0.9)
+        healths = self.generate_healths(0.8, 1.0)
         
         for i in range(len(self.hover_bearing_health)):
             self.hover_bearing_health[i] = healths[2*(i-1)]
@@ -49,7 +49,7 @@ class UAV:
 
             self.hover_coil_health[i] = healths[2*(i-1)+1]
             self.hover_coil_factors[i] = 1.0
-            self.hover_coil_failure_appearance[i] = round(random.uniform(0.4, 0.5), 3)
+            self.hover_coil_failure_appearance[i] = round(random.uniform(0.45, 0.6), 3)
 
         self.pusher_bearing_health = healths[8]
         self.pusher_bearing_factor = 1
@@ -57,27 +57,16 @@ class UAV:
 
         self.pusher_coil_health = healths[9]
         self.pusher_coil_factor = 1
-        self.pusher_coil_failure_appearance = round(random.uniform(0.4, 0.5), 3)
+        self.pusher_coil_failure_appearance = round(random.uniform(0.45, 0.6), 3)
 
-    def generate_healths(self, avg_health: float) -> np.ndarray:
-        target_sum = avg_health * 10 # 10 health components
+    def generate_healths(self, min_health: float, max_health:float) -> np.ndarray:
         num_values = 10 
-        lower_bound = 0.8
-        upper_bound = 1.0
 
-        values = np.random.uniform(lower_bound, upper_bound, num_values)
+        alpha = np.ones(num_values)
 
-        current_sum = np.sum(values)
-        scale_factor = target_sum / current_sum
-        scaled_values = values * scale_factor
+        values = np.random.dirichlet(alpha) * (min_health - max_health) + max_health
 
-        while np.any(scaled_values < lower_bound) or np.any(scaled_values > upper_bound):
-            values = np.random.uniform(lower_bound, upper_bound, num_values)
-            current_sum = np.sum(values)
-            scale_factor = target_sum / current_sum
-            scaled_values = values * scale_factor
-
-        return scaled_values
+        return values
 
     def degrade(self, hover: float, cruise: float) -> None:
         self.flyMinute()    # for stats
@@ -97,10 +86,10 @@ class UAV:
             hover_coil_deg_values = np.empty(len(self.hover_coil_health))
             for j in range(len(self.hover_coil_health)):
                 if self.hover_coil_health[j] > self.hover_coil_failure_appearance[j]:
-                    hover_coil_deg_values[j] = self.hover_coil_factors[j]*round(random.uniform(1, 5) * 0.0001, 6)
+                    hover_coil_deg_values[j] = self.hover_coil_factors[j]*round(random.uniform(1, 4.2) * 0.0001, 6)
                     self.hover_coil_factors[j] *= 1.001
                 else:
-                    hover_coil_deg_values[j] = self.hover_coil_factors[j]*round(random.uniform(1, 5) * 0.0001, 6)
+                    hover_coil_deg_values[j] = self.hover_coil_factors[j]*round(random.uniform(1, 4.2) * 0.0001, 6)
                     self.hover_coil_factors[j] *= self.hover_coil_severity[j]
                     
             self.hover_coil_health -= hover*hover_coil_deg_values
@@ -111,15 +100,15 @@ class UAV:
                 self.pusher_bearing_factor *= 1.001
             else:
                 pusher_bearing_deg_rate = self.pusher_bearing_factor*round(random.uniform(1, 5) * 0.0001, 6)
-                self.pusher_bearing_factor *= self.pusher_coil_severity
+                self.pusher_bearing_factor *= self.pusher_bearing_severity
 
             self.pusher_bearing_health -= cruise*pusher_bearing_deg_rate
 
             if self.pusher_coil_health > self.pusher_coil_failure_appearance:
-                pusher_coil_deg_rate = self.pusher_coil_factor*round(random.uniform(1, 5) * 0.0001, 6)
+                pusher_coil_deg_rate = self.pusher_coil_factor*round(random.uniform(1, 4.2) * 0.0001, 6)
                 self.pusher_coil_factor *= 1.001
             else:
-                pusher_coil_deg_rate = self.pusher_coil_factor*round(random.uniform(1, 5) * 0.0001, 6)
+                pusher_coil_deg_rate = self.pusher_coil_factor*round(random.uniform(1, 4.2) * 0.0001, 6)
                 self.pusher_coil_factor *= self.pusher_coil_severity
 
             self.pusher_coil_health -= cruise*pusher_coil_deg_rate

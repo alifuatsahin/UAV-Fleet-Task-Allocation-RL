@@ -3,7 +3,7 @@ from stats import Statistics
 from matplotlib import pyplot as plt
 
 
-fleet = Fleet(1, seed=1234)
+fleet = Fleet(1, seed=1342)
 stats = Statistics(fleet)
 N = 1000
 

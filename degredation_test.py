@@ -9,7 +9,7 @@ def get_metric(degredations, metric):
     start = sum(attr_lengths[:metric])
     return np.min(degredations[start:start+attr_lengths[metric]], 0)
 
-uav = UAV(0, 1234)
+uav = UAV(0, 123)
 stats = UAVStats(uav)
 
 uav.startMission()
