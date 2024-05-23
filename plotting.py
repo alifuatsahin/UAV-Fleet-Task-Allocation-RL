@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def plot_rolling_mean_variance(paths, labels):
+def plot_rolling_mean_variance(paths, labels, transform=False):
     plt.figure(figsize=(10, 6))
     for path, label in zip(paths, labels):
         # Load the CSV file
@@ -11,7 +11,10 @@ def plot_rolling_mean_variance(paths, labels):
         df_subset = df.head(50000)
 
         # Transform the data
-        df_subset['transformed_score'] = 1 - df_subset['score'] / 1000
+        if transform:
+            df_subset['transformed_score'] = 1 - df_subset['score'] / 1000
+        else:
+            df_subset['transformed_score'] = df_subset['score']
 
         # Calculate the rolling mean and rolling standard deviation for 1000 steps
         df_subset['rolling_mean'] = df_subset['transformed_score'].rolling(window=1000).mean()
@@ -41,4 +44,5 @@ def plot_rolling_mean_variance(paths, labels):
 paths = ['logs/checkpoint_regression_dirichlet_001_2024-05-23_01-03-06/hdata.csv',
          'logs/checkpoint_regression_gauss_001_2024-05-23_02-21-19/hdata.csv']
 labels = ['Dirichlet', 'Gaussian']
-plot_rolling_mean_variance(paths, labels)
+
+plot_rolling_mean_variance(paths, labels, transform = True)
