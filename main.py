@@ -51,7 +51,7 @@ moving_average = 10
 # Training Loop
 total_timesteps = 0
 updates = 0
-start_steps = 2000
+start_steps = 0
 # max_episode_steps = 10000
 
 try:
