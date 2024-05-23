@@ -18,19 +18,19 @@ class CriticNetwork(nn.Module):
 
         self.Q1 = nn.Sequential(
             nn.Linear(state_dim + action_dim, hidden_dims[0]),
-            nn.ReLU()
+            nn.LeakyReLU()
         )
         self.Q2 = nn.Sequential(
             nn.Linear(state_dim + action_dim, hidden_dims[0]),
-            nn.ReLU()
+            nn.LeakyReLU()
         )
 
         if len(hidden_dims) > 1:
             for i in range(len(hidden_dims)-1):
                 self.Q1.add_module('linear_{}'.format(i), nn.Linear(hidden_dims[i], hidden_dims[i+1]))
-                self.Q1.add_module('relu', nn.ReLU())
+                self.Q1.add_module('relu', nn.LeakyReLU())
                 self.Q2.add_module('linear_{}'.format(i), nn.Linear(hidden_dims[i], hidden_dims[i+1]))
-                self.Q2.add_module('relu', nn.ReLU())
+                self.Q2.add_module('relu', nn.LeakyReLU())
 
         self.Q1.add_module('output', nn.Linear(hidden_dims[-1], 1))
         self.Q2.add_module('output', nn.Linear(hidden_dims[-1], 1))
@@ -57,7 +57,7 @@ class GaussianPolicy(nn.Module):
         if len(hidden_dims) > 1:
             for i in range(len(hidden_dims)-1):
                 self.model.add_module('linear_{}'.format(i), nn.Linear(hidden_dims[i], hidden_dims[i+1]))
-                self.model.add_module('relu', nn.ReLU())
+                self.model.add_module('relu', nn.LeakyReLU())
 
         self.mean = nn.Linear(hidden_dims[-1], action_space.shape[0])
         self.log_std = nn.Linear(hidden_dims[-1], action_space.shape[0])

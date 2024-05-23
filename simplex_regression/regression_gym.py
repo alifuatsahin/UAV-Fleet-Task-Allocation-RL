@@ -10,6 +10,7 @@ class SimplexGymEnv(gym.Env):
         self._generateSimplex()
         self._setupActionSpace()
         self._setupObservationSpace()
+        self._truncate_count = 0
 
     def _setupActionSpace(self):
         self._action_high = 1
@@ -40,7 +41,9 @@ class SimplexGymEnv(gym.Env):
         return self._getObservation(), info
 
     def step(self, action: np.ndarray) -> tuple:
+        self._truncate_count += 1
         reward = self._reward(action)
-        truncate = False
-        terminate = True
+        self.state = np.delete(action, np.random.randint(self.simplex_size))
+        truncate = False if self._truncate_count < 50000 else True
+        terminate = False
         return np.array(self._getObservation()), reward, terminate, truncate, {}

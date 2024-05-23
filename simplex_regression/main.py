@@ -22,13 +22,13 @@ th.manual_seed(1234)
 agent = Agent(env=env, 
             hidden_dim=[64, 64, 64],
             batch_size=256,
-            alpha=0.01,
+            alpha=0.6,
             gamma=0.99,
             tau=0.005,
-            lr=0.001,
+            lr=0.01,
             update_interval=1,
             auto_entropy=False,
-            policy="Gaussian")
+            policy="Dirichlet")
 
 # Memory
 memory = ReplayBuffer(capacity=1000000, seed=1234)
@@ -43,56 +43,38 @@ rewards = []
 moving_average = 10
 
 # Training Loop
-total_timesteps = 0
 updates = 0
-start_steps = 0
 # max_episode_steps = 10000
 
 try:
-    for i in itertools.count(1):
-        episode_reward = 0
-        episode_timesteps = 0
-        done = False
-        state, _ = env.reset()
+    episode_timesteps = 0
+    done = False
+    state, _ = env.reset()
 
-        while not done:
-            if total_timesteps < start_steps:
-                action = env.action_space.sample()
-                action = action/np.sum(action)
-            else:
-                action = agent.get_action(state)
+    while not done:
+        action = agent.get_action(state)
 
-            if len(memory) > agent.batch_size:
-                qf1_loss, qf2_loss, policy_loss, alpha_loss, alpha_tlogs = agent.update_parameters(memory, agent.batch_size, updates)
-                qf1_loss_arr.append(qf1_loss)
-                qf2_loss_arr.append(qf2_loss)
-                policy_loss_arr.append(policy_loss)
-                alpha_loss_arr.append(alpha_loss)
-                alpha_tlogs_arr.append(alpha_tlogs)
-                updates += 1
+        if len(memory) > agent.batch_size:
+            qf1_loss, qf2_loss, policy_loss, alpha_loss, alpha_tlogs = agent.update_parameters(memory, agent.batch_size, updates)
+            qf1_loss_arr.append(qf1_loss)
+            qf2_loss_arr.append(qf2_loss)
+            policy_loss_arr.append(policy_loss)
+            alpha_loss_arr.append(alpha_loss)
+            alpha_tlogs_arr.append(alpha_tlogs)
+            updates += 1
 
-            next_state, reward, terminated, truncated, info = env.step(action)
-            episode_reward += reward
-            episode_timesteps += 1
-            total_timesteps += 1
+        next_state, reward, terminated, truncated, info = env.step(action)
+        rewards.append(reward)
+        episode_timesteps += 1
 
-            done = terminated or truncated
+        done = terminated or truncated
 
-            memory.push(state, action, reward, next_state, terminated)
+        memory.push(state, action, reward, next_state, terminated)
 
-            state = next_state
-            # print("Total Timesteps: {} Episode Timesteps: {} Reward: {}".format(total_timesteps, episode_timesteps, episode_reward))
+        state = next_state
+        print("Timesteps: {} Reward: {}".format(episode_timesteps, reward))
 
-        # example plotting
-        #env.plot_one_metric(UAVStats.PUSHER_BEARING_HEALTH, uav_index=None)
-        #env.plot_one_metric(UAVStats.HOVER_BEARING_HEALTH, uav_index=None, plot_strategy=Statistics.LOWEST)
-
-        if total_timesteps > start_steps:
-            rewards.append(episode_reward)
-
-        current_env = deepcopy(env)
-
-        print("Total Timesteps: {} Episode Num: {} Episode Timesteps: {} Reward: {}".format(total_timesteps, i, episode_timesteps, episode_reward))
+    # print("Total Timesteps: {} Episode Num: {} Episode Timesteps: {} Reward: {}".format(total_timesteps, i, episode_timesteps, episode_reward))
 
 except KeyboardInterrupt:
 

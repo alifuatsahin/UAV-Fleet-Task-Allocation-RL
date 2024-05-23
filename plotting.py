@@ -41,8 +41,8 @@ def plot_rolling_mean_variance(paths, labels, transform=False, data_size=1000, w
     plt.show()
 
 # Example usage:
-paths = ['logs/checkpoint_regression_dirichlet_001_2024-05-23_01-03-06/hdata.csv',
-         'logs/checkpoint_regression_gauss_001_2024-05-23_02-21-19/hdata.csv']
-labels = ['Dirichlet', 'Gaussian']
+paths = ['logs/checkpoint_2024-05-23_15-22-02/hdata.csv',
+         'logs/checkpoint_2024-05-23_11-34-11/hdata.csv']
+labels = ['Alpha 0.6', 'Auto-Tuning']
 
-plot_rolling_mean_variance(paths, labels, transform = True, data_size = 50000, window=1000)
+plot_rolling_mean_variance(paths, labels, transform = False, data_size = 8000, window=100)
