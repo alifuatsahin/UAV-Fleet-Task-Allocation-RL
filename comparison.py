@@ -61,8 +61,8 @@ while not done1 and not done2:
 
 
 plt.figure()
-env1.plot_lowest_healths()
-env2.plot_lowest_healths()
+env1.plot_lowest_healths("Baseline")
+env2.plot_lowest_healths("Agent")
 plt.figure()
 env1.plot_flown_distances(show_legend=False)
 env2.plot_flown_distances(show_legend=False)

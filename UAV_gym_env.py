@@ -90,5 +90,5 @@ class UAVGymEnv(gym.Env):
     def plot_lowest_degredations(self):
         self._statistics.plot_lowest_degredations()
 
-    def plot_lowest_healths(self):
-        self._statistics.plot_lowest_healths()
+    def plot_lowest_healths(self, label):
+        self._statistics.plot_lowest_healths(label)
