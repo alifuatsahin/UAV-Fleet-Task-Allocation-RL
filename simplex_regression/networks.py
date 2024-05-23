@@ -89,7 +89,7 @@ class GaussianPolicy(nn.Module):
         y = F.softmax(z)
         action = y
 
-        log_pi = normal.log_prob(z) - th.log(self.action_scale * (1 - y.pow(2)) + EPS)
+        log_pi = normal.log_prob(z)
         log_pi = log_pi.sum(1, keepdim=True)
 
         return action, log_pi

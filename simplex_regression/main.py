@@ -25,10 +25,10 @@ agent = Agent(env=env,
             alpha=0.2,
             gamma=0.99,
             tau=0.005,
-            lr=0.01,
+            lr=0.001,
             update_interval=1,
             auto_entropy=False,
-            policy="Gaussian",)
+            policy="Gaussian")
 
 # Memory
 memory = ReplayBuffer(capacity=1000000, seed=1234)
