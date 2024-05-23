@@ -31,7 +31,7 @@ agent = Agent(env=env,
             alpha=0.01,
             gamma=0.99,
             tau=0.005,
-            lr=0.0003,
+            lr=0.0001,
             update_interval=1,
             auto_entropy=True,
             policy="Dirichlet")
@@ -143,6 +143,10 @@ except KeyboardInterrupt:
         title="Score vs Iterations")
 
     fig.savefig(ckpt_path + "/score.png")
+
+    fig, ax = plt.subplots()
+    current_env.plot_lowest_degredations()
+    plt.savefig(ckpt_path + "/lowest_degredations.png")
 
     for name, value in loss.items():
         fig, ax = plt.subplots()

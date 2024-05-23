@@ -86,3 +86,6 @@ class UAVGymEnv(gym.Env):
 
     def plot_flown_distances(self, show_legend: bool = False):
         self._statistics.plot_flown_distances(show_legend=show_legend)
+
+    def plot_lowest_degredations(self):
+        self._statistics.plot_lowest_degredations()

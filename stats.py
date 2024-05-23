@@ -158,3 +158,17 @@ class Statistics:
                 metrics.append(name)
         plt.bar(metrics, metric_failure_values)
         plt.ylabel("Number of failures")
+
+    def plot_lowest_degredations(self):
+        attr_length = 10
+        degradations = np.stack(self._degradations, axis=-1)
+
+        for i in range(len(self._fleet)):
+            uav_health = degradations[attr_length*i:attr_length*(i+1)]
+            lowest_degradations = uav_health.min(axis=0)
+            x = np.arange(len(lowest_degradations))
+            plt.plot(x, lowest_degradations, label=f"uav {i+1}")
+        
+        plt.ylabel("Degradations")
+        plt.xlabel("Number of missions")
+        plt.legend()
