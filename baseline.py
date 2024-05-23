@@ -15,11 +15,11 @@ def baseline_strategy(state, uav_number):
         uav_health = state[attr_length*i:attr_length*(i+1)]
         lowest_healths.append(uav_health.min(axis=0))
 
-    action = th.softmax(th.tensor(lowest_healths), dim=0)
-    # action = th.tensor(np.ones(uav_number)/uav_number)
+    # action = th.softmax(th.tensor(lowest_healths), dim=0)
+    action = th.tensor(np.ones(uav_number)/uav_number)
     return action
 
-env = UAVGymEnv(uav_number=4, max_distance=100)
+env = UAVGymEnv(uav_number=4, max_distance=200)
 
 episode_reward = 0
 episode_timesteps = 0

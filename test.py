@@ -6,7 +6,9 @@ from agent import Agent
 from UAV_gym_env import UAVGymEnv
 import gym
 
-env = UAVGymEnv(uav_number=4, max_distance=100)
+th.manual_seed(2124)
+
+env = UAVGymEnv(uav_number=4, max_distance=200)
 
 agent = Agent(env=env,
                 hidden_dim=[256, 256],
@@ -19,7 +21,7 @@ agent = Agent(env=env,
                 auto_entropy=True,
                 policy="Dirichlet")
 
-path = "logs/checkpoint_2024-05-22_23-58-27/model.pt"
+path = "logs/best_training/model.pt"
 
 agent.load_checkpoint(path)
 
