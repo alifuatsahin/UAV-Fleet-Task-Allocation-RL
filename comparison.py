@@ -50,7 +50,7 @@ state2 = env2._getObservation()
 env3 = deepcopy(env1)
 state3 = env3._getObservation()
 
-while not done1 or not done2:
+while not done1 or not done2 or done3:
 
     if not done1:
         action1 = baseline_strategy1(state1, 4)
