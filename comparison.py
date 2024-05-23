@@ -1,6 +1,7 @@
 import torch as th
 import numpy as np
 from matplotlib import pyplot as plt
+from copy import deepcopy
 
 from agent import Agent
 from UAV_gym_env import UAVGymEnv
@@ -42,7 +43,8 @@ def baseline_strategy(state, uav_number):
 done1 = False
 done2 = False
 state1, _ = env1.reset()
-state2, _ = env2.reset()
+env2 = deepcopy(env1)
+state2 = env2._getObservation()
 
 while not done1 and not done2:
 
@@ -57,8 +59,6 @@ while not done1 and not done2:
         next_state2, reward2, terminated2, truncated2, info2 = env2.step(action2)
         done2 = terminated2 or truncated2
         state2 = next_state2
-
-
 
 plt.figure()
 env1.plot_lowest_healths("Baseline")
