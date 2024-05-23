@@ -34,8 +34,8 @@ def baseline_strategy(state, uav_number):
         uav_health = state[attr_length*i:attr_length*(i+1)]
         lowest_healths.append(uav_health.min(axis=0))
 
-    # action = th.softmax(th.tensor(lowest_healths), dim=0)
-    action = th.tensor(np.ones(uav_number)/uav_number)
+    action = th.softmax(th.tensor(lowest_healths), dim=0)
+    # action = th.tensor(np.ones(uav_number)/uav_number)
     return action
 
 
@@ -46,7 +46,7 @@ state1, _ = env1.reset()
 env2 = deepcopy(env1)
 state2 = env2._getObservation()
 
-while not done1 and not done2:
+while not done1 or not done2:
 
     if not done1:
         action1 = baseline_strategy(state1, 4)
@@ -63,7 +63,4 @@ while not done1 and not done2:
 plt.figure()
 env1.plot_lowest_healths("Baseline")
 env2.plot_lowest_healths("Agent")
-plt.figure()
-env1.plot_flown_distances(show_legend=False)
-env2.plot_flown_distances(show_legend=False)
 plt.show()
