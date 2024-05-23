@@ -25,10 +25,13 @@ agent.load_checkpoint(path)
 
 episode_reward = 0
 episode_timesteps = 0
+done = False
+state, _ = env.reset()
 
 while not done:
     action = agent.get_action(state)
-    next_state, reward, done, _ = env.step(action)
+    next_state, reward, terminated, truncated, info = env.step(action)
+    done = terminated or truncated
     state = next_state
     episode_reward += reward
     episode_timesteps += 1
