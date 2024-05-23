@@ -51,7 +51,7 @@ class GaussianPolicy(nn.Module):
 
         self.model = nn.Sequential(
             nn.Linear(state_dim, hidden_dims[0]),
-            nn.ReLU()
+            nn.LeakyReLU()
         )
 
         if len(hidden_dims) > 1:
@@ -89,7 +89,7 @@ class GaussianPolicy(nn.Module):
         y = F.softmax(z)
         action = y
 
-        log_pi = normal.log_prob(z)
+        log_pi = normal.log_prob(z) - th.log((1 - y.pow(2)) + EPS)
         log_pi = log_pi.sum(1, keepdim=True)
 
         return action, log_pi
