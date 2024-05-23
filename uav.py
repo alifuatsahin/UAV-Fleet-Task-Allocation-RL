@@ -62,7 +62,7 @@ class UAV:
     def generate_healths(self, min_health: float, max_health:float) -> np.ndarray:
         num_values = 10 
 
-        alpha = np.ones(num_values)
+        alpha = 0.1*np.ones(num_values)
 
         values = np.random.dirichlet(alpha) * (min_health - max_health) + max_health
 

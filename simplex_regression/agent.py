@@ -38,7 +38,7 @@ class Agent:
             self.policy = DirichletPolicy(env.observation_space.shape[0], env.action_space.shape[0], hidden_dim).to(self.device)
 
         if auto_entropy:
-            self.target_entropy = -0.98 * np.log(1/env.action_space.shape[0]) -th.prod(th.Tensor(env.action_space.shape[0]).to(self.device)).item()
+            self.target_entropy = -0.98 * np.log(1/env.action_space.shape[0]) #-th.prod(th.Tensor(env.action_space.shape[0]).to(self.device)).item()
             self.log_alpha = th.zeros(1, requires_grad=True, device=self.device)
             self.alpha_optim = optim.Adam([self.log_alpha], lr=lr, eps=1e-4)
 

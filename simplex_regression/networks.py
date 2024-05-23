@@ -86,7 +86,7 @@ class GaussianPolicy(nn.Module):
 
         normal = Normal(mean, std)
         z = normal.rsample()
-        y = F.softmax(z)
+        y = F.softmax(z, dim=-1)
         action = y
 
         log_pi = normal.log_prob(z) - th.log((1 - y.pow(2)) + EPS)

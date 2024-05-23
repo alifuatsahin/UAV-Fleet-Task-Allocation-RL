@@ -6,6 +6,7 @@ import numpy as np
 class SimplexGymEnv(gym.Env):
     def __init__(self, simplex_size, seed=1234):
         super(SimplexGymEnv, self).__init__()
+        np.random.seed(seed)
         self.simplex_size = simplex_size
         self._generateSimplex()
         self._setupActionSpace()
@@ -33,7 +34,7 @@ class SimplexGymEnv(gym.Env):
         self.state = np.delete(self.state, np.random.randint(self.simplex_size))
 
     def _reward(self, action) -> float:
-        return 1000*(1 - np.absolute(np.subtract(self.target, action)).mean())
+        return -np.absolute(np.subtract(self.target, action)).mean()
 
     def reset(self):
         self._generateSimplex()
