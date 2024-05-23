@@ -26,11 +26,11 @@ class UAV:
         self.pusher_bearing_failure_appearance = None
         self.pusher_coil_failure_appearance = None
 
-        self.hover_bearing_severity = np.random.uniform(1.002, 1.007, 4)
-        self.hover_coil_severity = np.random.uniform(1.005, 1.01, 4)
+        self.hover_bearing_severity = np.random.uniform(1.004, 1.008, 4)
+        self.hover_coil_severity = np.random.uniform(1.008, 1.012, 4)
 
-        self.pusher_bearing_severity = np.random.uniform(1.002, 1.007)
-        self.pusher_coil_severity = np.random.uniform(1.005, 1.01)
+        self.pusher_bearing_severity = np.random.uniform(1.004, 1.008)
+        self.pusher_coil_severity = np.random.uniform(1.008, 1.012)
 
         self.health_initialization()
         self.failure_detection = False
@@ -45,7 +45,7 @@ class UAV:
         for i in range(len(self.hover_bearing_health)):
             self.hover_bearing_health[i] = healths[2*(i-1)]
             self.hover_bearing_factors[i] = 1.0
-            self.hover_bearing_failure_appearance[i] = round(random.uniform(0.45, 0.55), 3)
+            self.hover_bearing_failure_appearance[i] = round(random.uniform(0.45, 0.6), 3)
 
             self.hover_coil_health[i] = healths[2*(i-1)+1]
             self.hover_coil_factors[i] = 1.0
@@ -53,7 +53,7 @@ class UAV:
 
         self.pusher_bearing_health = healths[8]
         self.pusher_bearing_factor = 1
-        self.pusher_bearing_failure_appearance = round(random.uniform(0.45, 0.55), 3)
+        self.pusher_bearing_failure_appearance = round(random.uniform(0.45, 0.6), 3)
 
         self.pusher_coil_health = healths[9]
         self.pusher_coil_factor = 1
@@ -75,10 +75,10 @@ class UAV:
             hover_bearing_deg_values = np.empty(len(self.hover_bearing_health))
             for j in range(len(self.hover_bearing_health)):
                 if self.hover_bearing_health[j] > self.hover_bearing_failure_appearance[j]:
-                    hover_bearing_deg_values[j] = self.hover_bearing_factors[j]*round(random.uniform(1, 5) * 0.0003, 6)
+                    hover_bearing_deg_values[j] = self.hover_bearing_factors[j]*round(random.uniform(1, 5) * 0.0002, 6)
                     self.hover_bearing_factors[j] *= 1.001
                 else:
-                    hover_bearing_deg_values[j] = self.hover_bearing_factors[j]*round((random.uniform(1, 5) * 0.0003), 6)
+                    hover_bearing_deg_values[j] = self.hover_bearing_factors[j]*round((random.uniform(1, 5) * 0.0002), 6)
                     self.hover_bearing_factors[j] *= self.hover_bearing_severity[j]
 
             self.hover_bearing_health -= hover*hover_bearing_deg_values
@@ -86,29 +86,29 @@ class UAV:
             hover_coil_deg_values = np.empty(len(self.hover_coil_health))
             for j in range(len(self.hover_coil_health)):
                 if self.hover_coil_health[j] > self.hover_coil_failure_appearance[j]:
-                    hover_coil_deg_values[j] = self.hover_coil_factors[j]*round(random.uniform(1, 4.15) * 0.0003, 6)
+                    hover_coil_deg_values[j] = self.hover_coil_factors[j]*round(random.uniform(1, 4) * 0.0002, 6)
                     self.hover_coil_factors[j] *= 1.001
                 else:
-                    hover_coil_deg_values[j] = self.hover_coil_factors[j]*round(random.uniform(1, 4.15) * 0.0003, 6)
+                    hover_coil_deg_values[j] = self.hover_coil_factors[j]*round(random.uniform(1, 4) * 0.0002, 6)
                     self.hover_coil_factors[j] *= self.hover_coil_severity[j]
                     
             self.hover_coil_health -= hover*hover_coil_deg_values
 
         if cruise > 0:
             if self.pusher_bearing_health > self.pusher_bearing_failure_appearance:
-                pusher_bearing_deg_rate = self.pusher_bearing_factor*round(random.uniform(1, 5) * 0.0003, 6)
+                pusher_bearing_deg_rate = self.pusher_bearing_factor*round(random.uniform(1, 5) * 0.0002, 6)
                 self.pusher_bearing_factor *= 1.001
             else:
-                pusher_bearing_deg_rate = self.pusher_bearing_factor*round(random.uniform(1, 5) * 0.0003, 6)
+                pusher_bearing_deg_rate = self.pusher_bearing_factor*round(random.uniform(1, 5) * 0.0002, 6)
                 self.pusher_bearing_factor *= self.pusher_bearing_severity
 
             self.pusher_bearing_health -= cruise*pusher_bearing_deg_rate
 
             if self.pusher_coil_health > self.pusher_coil_failure_appearance:
-                pusher_coil_deg_rate = self.pusher_coil_factor*round(random.uniform(1, 4.15) * 0.0003, 6)
+                pusher_coil_deg_rate = self.pusher_coil_factor*round(random.uniform(1, 4) * 0.0002, 6)
                 self.pusher_coil_factor *= 1.001
             else:
-                pusher_coil_deg_rate = self.pusher_coil_factor*round(random.uniform(1, 4.15) * 0.0003, 6)
+                pusher_coil_deg_rate = self.pusher_coil_factor*round(random.uniform(1, 4) * 0.0002, 6)
                 self.pusher_coil_factor *= self.pusher_coil_severity
 
             self.pusher_coil_health -= cruise*pusher_coil_deg_rate
