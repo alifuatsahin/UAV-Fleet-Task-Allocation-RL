@@ -172,3 +172,14 @@ class Statistics:
         plt.ylabel("Degradations")
         plt.xlabel("Number of missions")
         plt.legend()
+
+    def plot_lowest_healths(self):
+        degradations = np.stack(self._degradations, axis=-1)
+
+        lowest_healths = degradations.min(axis=0)
+        x = np.arange(len(lowest_healths))
+        plt.plot(x, lowest_healths, label=f"min UAV health")
+        
+        plt.ylabel("Degradations")
+        plt.xlabel("Number of missions")
+        plt.legend()
