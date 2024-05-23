@@ -25,8 +25,8 @@ agent = Agent(env=env,
             alpha=0.01,
             gamma=0.99,
             tau=0.005,
-            lr=0.01,
-            update_interval=100,
+            lr=0.04,
+            update_interval=1,
             auto_entropy=False,
             policy="Gaussian")
 

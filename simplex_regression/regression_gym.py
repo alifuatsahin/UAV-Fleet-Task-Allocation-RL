@@ -45,6 +45,6 @@ class SimplexGymEnv(gym.Env):
         self._truncate_count += 1
         reward = self._reward(action)
         self.state = np.delete(action, np.random.randint(self.simplex_size))
-        truncate = False if self._truncate_count < 50000 else True
+        truncate = False if self._truncate_count < 10000 else True
         terminate = False
         return np.array(self._getObservation()), reward, terminate, truncate, {}

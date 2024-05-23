@@ -12,7 +12,8 @@ def plot_rolling_mean_variance(paths, labels, transform=False, data_size=1000, w
 
         # Transform the data
         if transform:
-            df_subset['transformed_score'] = 1 - df_subset['score'] / 1000
+            # df_subset['transformed_score'] = 1 - df_subset['score'] / 1000
+            df_subset['transformed_score'] = - df_subset['score']
         else:
             df_subset['transformed_score'] = df_subset['score']
 
@@ -41,8 +42,10 @@ def plot_rolling_mean_variance(paths, labels, transform=False, data_size=1000, w
     plt.show()
 
 # Example usage:
-paths = ['logs/checkpoint_2024-05-23_15-22-02/hdata.csv',
-         'logs/checkpoint_2024-05-23_11-34-11/hdata.csv']
-labels = ['Alpha 0.6', 'Auto-Tuning']
+paths = ['logs/checkpoint_regression_gauss_001_2024-05-23_19-26-13/hdata.csv',
+         'logs/checkpoint_regression_gauss_001_2024-05-23_20-44-08/hdata.csv',
+         'logs/checkpoint_regression_gauss_001_2024-05-23_20-55-29/hdata.csv',
+         'logs/checkpoint_regression_gauss_001_2024-05-23_21-00-23/hdata.csv']
+labels = ['Gaussian-Softmax lr=0.01', 'Dirichlet lr=0.01', 'Gaussian-Softmax lr=0.03', 'Dirichlet lr=0.03']
 
-plot_rolling_mean_variance(paths, labels, transform = False, data_size = 8000, window=100)
+plot_rolling_mean_variance(paths, labels, transform = True, data_size = 8000, window=100)
