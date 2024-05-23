@@ -44,6 +44,7 @@ def baseline_strategy2(state, uav_number):
 
 done1 = False
 done2 = False
+done3 = False
 state1, _ = env1.reset()
 env2 = deepcopy(env1)
 state2 = env2._getObservation()

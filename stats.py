@@ -180,6 +180,8 @@ class Statistics:
         lowest_healths[-1] = 0
         x = np.arange(len(lowest_healths))
         plt.plot(x, lowest_healths, label=f"{label}")
+
+        print(f"Number of Missions for {label}: {len(lowest_healths)}")
         
         plt.ylabel("Degradations")
         plt.xlabel("Number of missions")
