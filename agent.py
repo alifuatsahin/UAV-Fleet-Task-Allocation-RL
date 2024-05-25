@@ -109,7 +109,7 @@ class Agent:
     def target_entropy_schedule(self, target_entropy, actions, log_pi):
         exp_discount = 0.99
         avg_threshold = 0.01*(np.log(actions.shape[0]) - 1/(2*actions.shape[0]))
-        std_threshold = 0.05
+        std_threshold = 0.05*(np.log(actions.shape[0]) - 1/(2*actions.shape[0]))
         discount_factor = 1.1
         max_iter = 100
 
