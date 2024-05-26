@@ -38,9 +38,10 @@ class Agent:
             self.policy = DirichletPolicy(env.observation_space.shape[0], env.action_space.shape[0], hidden_dim).to(self.device)
 
         if auto_entropy:
-            self.target_entropy = -(np.log(env.action_space.shape[0]) - 1/(2*env.action_space.shape[0])) * th.lgamma(th.Tensor([env.action_space.shape[0]])).item() - 0.25 # -0.98 * np.log(1/env.action_space.shape[0]) -th.prod(th.Tensor(env.action_space.shape[0]).to(self.device)).item()
+            self.target_entropy = -th.lgamma(th.Tensor([env.action_space.shape[0]])).item() # -0.98 * np.log(1/env.action_space.shape[0]) -th.prod(th.Tensor(env.action_space.shape[0]).to(self.device)).item()
             self.log_alpha = th.zeros(1, requires_grad=True, device=self.device)
             self.alpha_optim = optim.Adam([self.log_alpha], lr=lr, eps=1e-4)
+            self.count = 0
 
         self.policy_optim = optim.Adam(self.policy.parameters(), lr=lr, eps=1e-4)
 
@@ -86,7 +87,7 @@ class Agent:
         self.policy_optim.step()
 
         if self.auto_entropy:
-            # self.target_entropy = self.target_entropy_schedule(self.target_entropy, action, log_pi)
+            self.target_entropy = self.target_entropy_schedule(self.target_entropy, log_pi, updates)
             
             alpha_loss = -(self.log_alpha * (log_pi + self.target_entropy).detach()).mean()
 
@@ -106,27 +107,27 @@ class Agent:
 
         return qf1_loss.item(), qf2_loss.item(), policy_loss.item(), alpha_loss.item(), alpha_tlogs.item()
     
-    def target_entropy_schedule(self, target_entropy, actions, log_pi):
-        exp_discount = 0.99
-        avg_threshold = 0.05*(np.log(actions.shape[0]) - 1/(2*actions.shape[0]))
-        std_threshold = 0.1*(np.log(actions.shape[0]) - 1/(2*actions.shape[0]))
-        discount_factor = 1.1
-        max_iter = 1000
+    def target_entropy_schedule(self, target_entropy, log_pi, updates):
+        if updates % 1000 != 0:
+            return target_entropy
+        exp_discount = 0.95
+        avg_threshold = 0.01
+        std_threshold = 0.05
+        discount_factor = 1.01
+        max_iter = 1
 
-        actions = actions.clone().detach().to(self.device).numpy()
         log_pi = log_pi.clone().detach().to(self.device).numpy()
 
         mu_hat = target_entropy
-        # policy_entropy = -(actions*log_pi).sum()
         policy_entropy = -log_pi.mean()
         sigma = 0
         for i in range(max_iter):
             delta = policy_entropy - mu_hat
             mu_hat = mu_hat + delta * (1-exp_discount)
             sigma = np.sqrt(exp_discount * (sigma**2 + (1-exp_discount) * delta**2))
-            if not (target_entropy - avg_threshold < mu_hat and target_entropy + avg_threshold > mu_hat) or std_threshold > sigma:
+            if not (target_entropy - avg_threshold < mu_hat and target_entropy + avg_threshold > mu_hat) or sigma > std_threshold:
                 return target_entropy
-
+        print("Updated target entropy to: ", target_entropy*discount_factor)
         return target_entropy*discount_factor
     
     def save_checkpoint(self, env_name, suffix="", ckpt_path=None):
