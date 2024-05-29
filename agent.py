@@ -38,7 +38,7 @@ class Agent:
             self.policy = DirichletPolicy(env.observation_space.shape[0], env.action_space.shape[0], hidden_dim).to(self.device)
 
         if auto_entropy:
-            self.target_entropy = -th.lgamma(th.Tensor([env.action_space.shape[0]])).item() # -0.98 * np.log(1/env.action_space.shape[0]) -th.prod(th.Tensor(env.action_space.shape[0]).to(self.device)).item()
+            self.target_entropy = -th.lgamma(th.Tensor([env.action_space.shape[0]])).item() # -0.98 * np.log(1/env.action_space.shape[0]) -th.prod(th.Tensor(env.action_space.shape[0]).to(self.device)).item()(np.log(env.action_space.shape[0]) - 1/(2*env.action_space.shape[0]))*
             self.log_alpha = th.zeros(1, requires_grad=True, device=self.device)
             self.alpha_optim = optim.Adam([self.log_alpha], lr=lr, eps=1e-4)
             self.count = 0
@@ -108,12 +108,12 @@ class Agent:
         return qf1_loss.item(), qf2_loss.item(), policy_loss.item(), alpha_loss.item(), alpha_tlogs.item()
     
     def target_entropy_schedule(self, target_entropy, log_pi, updates):
-        if updates % 1000 != 0:
-            return target_entropy
-        exp_discount = 0.95
+        # if updates % 1000 != 0:
+        #     return target_entropy
+        exp_discount = 0.01
         avg_threshold = 0.01
-        std_threshold = 0.05
-        discount_factor = 1.01
+        std_threshold = 0.02
+        discount_factor = 1.001
         max_iter = 1
 
         log_pi = log_pi.clone().detach().to(self.device).numpy()

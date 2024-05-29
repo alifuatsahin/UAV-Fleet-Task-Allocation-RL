@@ -20,14 +20,14 @@ ckpt_path = "logs/checkpoint_{}".format(date_time)
 # env = gym.make("HalfCheetah-v4")
 # env.action_space.seed(1234)
 
-env = UAVGymEnv(uav_number=8, max_distance=100)
+env = UAVGymEnv(uav_number=8, max_distance=200)
 
 th.manual_seed(1234)
 
 # Agent
 agent = Agent(env=env, 
             hidden_dim=[256, 512, 256],
-            batch_size=256,
+            batch_size=512,
             alpha=0.01,
             gamma=0.99,
             tau=0.005,
