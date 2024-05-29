@@ -46,7 +46,7 @@ class Mission:
         for i in range(self.cruise_profile):
             self._uav.degrade(0, 1)
 
-        self._uav.degrade(self.hover_end, self.cruise_end)    
+        self._uav.degrade(self.hover_end.item(), self.cruise_end.item())    
     
         return self._uav.detectFailure()
     
