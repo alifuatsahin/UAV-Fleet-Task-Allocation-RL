@@ -7,11 +7,14 @@ from agent import Agent
 from UAV_gym_env import UAVGymEnv
 import gym
 
-env1 = UAVGymEnv(uav_number=8, max_distance=200)
-env2 = UAVGymEnv(uav_number=8, max_distance=200)
+uav_number = 8
+max_distance = 200
+
+env1 = UAVGymEnv(uav_number, max_distance)
+env2 = UAVGymEnv(uav_number, max_distance)
 
 agent = Agent(env=env2,
-                hidden_dim=[256,512, 256],
+                hidden_dim=[256, 512, 256],
                 batch_size=256,
                 alpha=0.01,
                 gamma=0.99,
@@ -37,7 +40,7 @@ def baseline_strategy1(state, uav_number):
     action = th.softmax(th.tensor(lowest_healths), dim=0)
     return action
 
-def baseline_strategy2(state, uav_number):
+def baseline_strategy2(uav_number):
 
     action = th.tensor(np.ones(uav_number)/uav_number)
     return action
@@ -54,7 +57,7 @@ state3 = env3._getObservation()
 while not done1 or not done2 or not done3:
 
     if not done1:
-        action1 = baseline_strategy1(state1, 4)
+        action1 = baseline_strategy1(state1, uav_number)
         next_state1, reward1, terminated1, truncated1, info1 = env1.step(action1)
         done1 = terminated1 or truncated1
         state1 = next_state1
@@ -66,7 +69,7 @@ while not done1 or not done2 or not done3:
         state2 = next_state2
 
     if not done3:
-        action3 = baseline_strategy2(state3, 4)
+        action3 = baseline_strategy2(uav_number)
         next_state3, reward3, terminated3, truncated3, info3 = env3.step(action3)
         done3 = terminated3 or truncated3
         state3 = next_state3
