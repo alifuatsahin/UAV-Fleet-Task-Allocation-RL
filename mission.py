@@ -33,10 +33,10 @@ class Mission:
         
     def _getMissionProfile(self):
         self.hover_profile = math.floor(self.hover_distance)
-        self.hover_end = self.hover_profile - self.hover_profile
+        self.hover_end = self.hover_distance - self.hover_profile
 
         self.cruise_profile = math.floor(self.cruise_distance)
-        self.cruise_end = self.cruise_profile - self.cruise_profile
+        self.cruise_end = self.cruise_distance - self.cruise_profile
 
     def execute(self):
         self._uav.startMission()
